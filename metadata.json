@@ -1,0 +1,6 @@
+{
+  "name": "Prashant Footwear",
+  "description": "High-end, minimalist, and immersive online footwear catalog and admin operations workspace for Prashant Footwear.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

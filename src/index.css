@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gold: #C5A059;
+  --color-gold-hover: #B08E4F;
+  --color-gold-muted: rgba(197, 160, 89, 0.3);
+  --color-gold-faint: rgba(197, 160, 89, 0.08);
+  --color-zinc-950: #050505;
+  --color-zinc-900: #0C0C0C;
+  --color-zinc-850: #141414;
+  --color-zinc-800: #1B1B1B;
+  --font-serif: Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+@layer utilities {
+  .serif-display {
+    font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+  }
+  .tracking-widest-plus {
+    letter-spacing: 0.25em;
+  }
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .video-mock {
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.8) 100%), url('https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&q=80');
+    background-size: cover;
+    background-position: center;
+  }
+}
