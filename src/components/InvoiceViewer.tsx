@@ -168,7 +168,7 @@ export const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceId, onClose
             <div className="space-y-2">
               <h1 className="text-3xl font-black tracking-tight text-slate-950">PRASHANT FOOTWEAR</h1>
               <p className="text-xs text-slate-500 max-w-md font-medium">
-                Premium Multi-brand footwear retail store and custom workshop. Laxmi Chowk, Hinjawadi Phase 1, Pune, Maharashtra - 411057
+                Premium Multi-brand footwear retail store and custom workshop. On old Kupwad Road, Lovley Circle Sangli
               </p>
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-400 font-mono">
                 <span>GSTIN: <b className="text-slate-600">27AABCP8743G1Z2</b></span>

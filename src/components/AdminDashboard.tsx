@@ -1419,7 +1419,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                   {/* Shop Details */}
                   <div className="text-center space-y-1 mb-4">
                     <h4 className="font-extrabold text-xs uppercase tracking-wider">PRASHANT FOOTWEAR</h4>
-                    <p className="text-[9px] text-zinc-500">Laxmi Chowk, Hinjawadi Phase 1, Pune</p>
+                    <p className="text-[9px] text-zinc-500">On old Kupwad Road, Lovley Circle Sangli</p>
                     <p className="text-[9px] text-zinc-500">GSTIN: 27AABCP8743G1Z2 (PROV)</p>
                     <p className="text-[9px] text-zinc-500">Tel: +91 98765 43210</p>
                     <p className="text-[9px] text-zinc-500 mt-2">---------------------------------------</p>
@@ -1575,7 +1575,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                     <div id="printable-thermal-receipt" className="bg-white text-zinc-950 font-mono text-[10px] p-4 rounded-xl border border-zinc-300 shadow-inner max-h-[300px] overflow-y-auto">
                       <div className="text-center space-y-0.5 mb-3">
                         <p className="font-extrabold text-xs">PRASHANT FOOTWEAR</p>
-                        <p className="text-[8px] text-zinc-500">Laxmi Chowk, Hinjawadi Phase 1, Pune</p>
+                        <p className="text-[8px] text-zinc-500">On old Kupwad Road, Lovley Circle Sangli</p>
                         <p className="text-[8px] text-zinc-500">GSTIN: 27AABCP8743G1Z2</p>
                         <p className="text-[8px] text-zinc-500">---------------------------------------</p>
                         <p className="text-[8px] text-left">INVOICE: {checkoutReceipt.id}</p>
