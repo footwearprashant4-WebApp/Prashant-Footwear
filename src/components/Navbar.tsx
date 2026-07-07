@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
+import { LanguageToggle } from './LanguageToggle';
 import { User, LogIn, LogOut, Shield, ChevronDown, Menu, X, ShoppingCart, Sun, Moon, ChevronRight, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -35,6 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   showThemeToggle = false
 }) => {
   const { currentUser, logout, isAdmin } = useAuth();
+  const { t } = useLanguage();
   const [hasScrolledOnce, setHasScrolledOnce] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -64,93 +67,116 @@ export const Navbar: React.FC<NavbarProps> = ({
               : 'bg-white/85 backdrop-blur-md border-b border-zinc-200/80 py-4 shadow-sm'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 flex items-center justify-between gap-3 sm:gap-6 md:gap-8">
         {/* Left: Brand Logo */}
         <div 
           id="navbar-logo"
           onClick={onScrollToTop}
-          className="cursor-pointer flex items-center gap-1 group"
+          className="cursor-pointer flex flex-col items-start leading-none group shrink-0"
         >
-          <span className={`serif-display text-2xl md:text-3xl font-bold tracking-tighter uppercase transition-colors duration-300 group-hover:text-gold ${
+          <span className={`serif-display text-2xl md:text-3xl font-extrabold tracking-tighter uppercase transition-colors duration-300 group-hover:text-gold ${
             isNavbarDark 
-              ? 'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]' 
+              ? 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]' 
               : 'text-zinc-900'
           }`}>
             Prashant
           </span>
-          <span className="font-mono text-[10px] uppercase tracking-widest text-[#C5A059] ml-2 mt-1 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+          <span className="font-mono text-[8px] sm:text-[9px] uppercase tracking-[0.3em] text-[#C5A059] font-bold mt-0.5 ml-0.5">
             Footwear
           </span>
         </div>
 
-        {/* Center: Desktop Navigation */}
-        <nav id="navbar-menu-desktop" className="hidden md:flex items-center gap-8">
+        {/* Center: Desktop Navigation Capsule */}
+        <nav 
+          id="navbar-menu-desktop" 
+          className={`hidden md:flex items-center gap-2 p-1.5 rounded-full font-sans border transition-all duration-500 shrink-0 ${
+            isNavbarDark
+              ? 'bg-black/50 border-white/15 shadow-[inset_0_1px_2px_rgba(255,255,255,0.05)]'
+              : 'bg-zinc-100 border-zinc-200/80 shadow-inner'
+          }`}
+        >
           <button
             onClick={onScrollToTop}
-            className={`text-sm font-semibold tracking-wider uppercase transition-colors ${
+            className={`px-5 py-2 text-xs font-extrabold tracking-wider uppercase rounded-full transition-all duration-300 cursor-pointer ${
               isNavbarDark
-                ? 'text-zinc-100 hover:text-gold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]'
-                : 'text-zinc-700 hover:text-gold font-bold'
+                ? 'text-zinc-300 hover:text-white hover:bg-white/5'
+                : 'text-zinc-600 hover:text-zinc-900 hover:bg-black/5'
             }`}
           >
-            Home
+            {t('nav.home')}
           </button>
           <button
             onClick={onOpenAbout}
-            className={`text-sm font-semibold tracking-wider uppercase transition-colors ${
+            className={`px-5 py-2 text-xs font-extrabold tracking-wider uppercase rounded-full transition-all duration-300 cursor-pointer ${
               isNavbarDark
-                ? 'text-zinc-100 hover:text-gold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]'
-                : 'text-zinc-700 hover:text-gold font-bold'
+                ? 'text-zinc-300 hover:text-white hover:bg-white/5'
+                : 'text-zinc-600 hover:text-zinc-900 hover:bg-black/5'
             }`}
           >
-            About
+            {t('nav.about')}
           </button>
           <button
             onClick={onScrollToProducts}
-            className={`text-sm font-semibold tracking-wider uppercase transition-colors ${
+            className={`px-5 py-2 text-xs font-extrabold tracking-wider uppercase rounded-full transition-all duration-300 cursor-pointer ${
               isNavbarDark
-                ? 'text-zinc-100 hover:text-gold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]'
-                : 'text-zinc-700 hover:text-gold font-bold'
+                ? 'text-zinc-300 hover:text-white hover:bg-white/5'
+                : 'text-zinc-600 hover:text-zinc-900 hover:bg-black/5'
             }`}
           >
-            Collection
+            {t('nav.collection')}
           </button>
           <button
             onClick={onOpenOffers}
-            className={`text-sm font-semibold tracking-wider uppercase transition-colors ${
+            className={`px-5 py-2 text-xs font-extrabold tracking-wider uppercase rounded-full transition-all duration-300 cursor-pointer ${
               isNavbarDark
-                ? 'text-zinc-100 hover:text-gold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]'
-                : 'text-zinc-700 hover:text-gold font-bold'
+                ? 'text-zinc-300 hover:text-white hover:bg-white/5'
+                : 'text-zinc-600 hover:text-zinc-900 hover:bg-black/5'
             }`}
           >
-            Offers
+            {t('nav.offers')}
           </button>
           <button
             onClick={onOpenContact}
-            className={`text-sm font-semibold tracking-wider uppercase transition-colors ${
+            className={`px-5 py-2 text-xs font-extrabold tracking-wider uppercase rounded-full transition-all duration-300 cursor-pointer ${
               isNavbarDark
-                ? 'text-zinc-100 hover:text-gold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]'
-                : 'text-zinc-700 hover:text-gold font-bold'
+                ? 'text-zinc-300 hover:text-white hover:bg-white/5'
+                : 'text-zinc-600 hover:text-zinc-900 hover:bg-black/5'
             }`}
           >
-            Contact
+            {t('nav.contact')}
           </button>
+          {isAdmin && (
+            <button
+              onClick={onToggleAdminMode}
+              className={`px-5 py-2 text-xs font-black tracking-wider uppercase rounded-full transition-all duration-300 cursor-pointer flex items-center gap-1.5 shadow-[0_2px_10px_-3px_rgba(245,158,11,0.3)] border ${
+                isNavbarDark
+                  ? 'text-amber-400 border-amber-500/30 bg-amber-500/10 hover:text-amber-300 hover:bg-amber-500/20'
+                  : 'text-amber-700 border-amber-500/20 bg-amber-500/5 hover:text-amber-900 hover:bg-amber-500/15'
+              }`}
+            >
+              <Shield size={12} className="animate-pulse text-amber-500" />
+              {isAdminMode ? t('nav.customerMode') : t('nav.adminMode')}
+            </button>
+          )}
         </nav>
 
         {/* Right: Actions */}
-        <div id="navbar-actions" className="flex items-center gap-4">
+        <div id="navbar-actions" className="flex items-center gap-2 sm:gap-3.5 md:gap-4 lg:gap-5">
+          {/* Language Toggle */}
+          <LanguageToggle isNavbarDark={isNavbarDark} />
+
           {/* Theme Toggle Button */}
           {showThemeToggle && (
             <button
               onClick={onToggleTheme}
-              className={`p-2 rounded-full transition-all duration-300 cursor-pointer ${
+              className={`flex h-[42px] w-[42px] items-center justify-center rounded-full border transition-all duration-300 cursor-pointer relative ${
                 isNavbarDark
-                  ? 'text-yellow-400 hover:text-yellow-300 hover:bg-white/10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]'
-                  : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100'
+                  ? 'border-white/15 bg-black/50 text-yellow-400 hover:text-yellow-300 hover:border-white/30 hover:bg-white/5 shadow-[inset_0_1px_2px_rgba(255,255,255,0.05)] hover:scale-105'
+                  : 'border-zinc-200/80 bg-zinc-100 text-zinc-600 hover:text-zinc-950 hover:border-zinc-300 hover:bg-zinc-200/50 shadow-inner hover:scale-105'
               }`}
               title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
-              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+              {theme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}
             </button>
           )}
 
@@ -158,15 +184,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           {!isAdminMode && cartCount > 0 && (
             <button
               onClick={onOpenCart}
-              className={`relative p-2 transition-colors cursor-pointer ${
+              className={`flex h-[42px] w-[42px] items-center justify-center rounded-full border transition-all duration-300 cursor-pointer relative ${
                 isNavbarDark
-                  ? 'text-zinc-100 hover:text-gold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]'
-                  : 'text-zinc-800 hover:text-gold'
+                  ? 'border-white/15 bg-black/50 text-zinc-100 hover:text-gold hover:border-white/30 hover:bg-white/5 shadow-[inset_0_1px_2px_rgba(255,255,255,0.05)] hover:scale-105'
+                  : 'border-zinc-200/80 bg-zinc-100 text-zinc-800 hover:text-gold hover:border-zinc-300 hover:bg-zinc-200/50 shadow-inner hover:scale-105'
               }`}
+              title="View Cart"
             >
-              <ShoppingCart size={20} />
+              <ShoppingCart size={19} />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gold text-[10px] font-bold text-black animate-pulse">
+                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#C5A059] text-[10px] font-black text-black ring-2 ring-black animate-pulse">
                   {cartCount}
                 </span>
               )}
@@ -177,16 +204,24 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="relative" id="profile-logo-section">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className={`flex h-10 w-10 items-center justify-center rounded-full border transition-all cursor-pointer relative ${
+              className={`flex h-[42px] w-[42px] items-center justify-center rounded-full border transition-all duration-300 cursor-pointer relative ${
                 isNavbarDark
-                  ? 'border-white/20 bg-black/40 text-white hover:border-gold hover:text-gold hover:bg-black/60 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]'
-                  : 'border-zinc-200 bg-white text-zinc-800 hover:border-gold hover:text-gold hover:bg-zinc-50 shadow-sm'
+                  ? 'border-white/15 bg-black/50 text-white hover:border-white/30 hover:bg-white/5 shadow-[inset_0_1px_2px_rgba(255,255,255,0.05)] hover:scale-105'
+                  : 'border-zinc-200/80 bg-zinc-100 text-zinc-800 hover:border-zinc-300 hover:bg-zinc-200/50 shadow-inner hover:scale-105'
               }`}
               title="Profile Menu"
             >
-              <User size={18} className={currentUser && isAdmin ? 'text-gold' : (isNavbarDark ? 'text-white' : 'text-zinc-800')} />
+              {currentUser ? (
+                <span className={`text-[12px] font-black tracking-normal leading-none flex items-center justify-center ${
+                  currentUser.role === 'admin' ? 'text-amber-500' : 'text-indigo-500'
+                }`}>
+                  {currentUser.role === 'admin' ? 'PF' : 'U'}
+                </span>
+              ) : (
+                <User size={19} className={isNavbarDark ? 'text-white' : 'text-zinc-800'} />
+              )}
               {currentUser && (
-                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border border-black animate-pulse" />
+                <span className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-zinc-950 animate-pulse" />
               )}
             </button>
 
@@ -277,11 +312,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                                 }`}>
                                   <Shield size={12} className={isAdminMode ? "text-amber-500" : "text-zinc-400"} />
                                 </div>
-                                <div className="flex flex-col">
+                                <div className="flex flex-col font-sans">
                                   <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider">
-                                    {isAdminMode ? 'SWITCH TO SHOP' : 'SWITCH TO ADMIN'}
+                                    {isAdminMode ? t('nav.customerMode') : t('nav.adminMode')}
                                   </span>
-                                  <span className="text-[8px] sm:text-[9px] text-zinc-400 font-sans mt-0.5">Toggle Control Center</span>
+                                  <span className="text-[8px] sm:text-[9px] text-zinc-400 mt-0.5">{t('nav.adminPanel')}</span>
                                 </div>
                               </div>
                               <div className={`w-7 h-4 sm:w-8 sm:h-4.5 rounded-full relative shrink-0 transition-colors ${
@@ -442,11 +477,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Mobile Menu Icon */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className={`md:hidden p-2 transition-colors cursor-pointer drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] ${
-              isNavbarDark ? 'text-white hover:text-gold' : 'text-zinc-800 hover:text-gold'
+            className={`md:hidden flex h-[42px] w-[42px] items-center justify-center rounded-full border transition-all duration-300 cursor-pointer relative ${
+              isNavbarDark
+                ? 'border-white/15 bg-black/50 text-white hover:border-white/30 hover:bg-white/5 shadow-[inset_0_1px_2px_rgba(255,255,255,0.05)] hover:scale-105'
+                : 'border-zinc-200/80 bg-zinc-100 text-zinc-800 hover:border-zinc-300 hover:bg-zinc-200/50 shadow-inner hover:scale-105'
             }`}
           >
-            {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            {isMobileMenuOpen ? <X size={19} /> : <Menu size={19} />}
           </button>
         </div>
       </div>
@@ -473,7 +510,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 theme === 'dark' ? 'hover:text-white' : 'hover:text-gold'
               }`}
             >
-              Home
+              {t('nav.home')}
             </button>
             <button
               onClick={() => {
@@ -484,7 +521,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 theme === 'dark' ? 'hover:text-white' : 'hover:text-gold'
               }`}
             >
-              About
+              {t('nav.about')}
             </button>
             <button
               onClick={() => {
@@ -495,7 +532,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 theme === 'dark' ? 'hover:text-white' : 'hover:text-gold'
               }`}
             >
-              Collection
+              {t('nav.collection')}
             </button>
             <button
               onClick={() => {
@@ -506,7 +543,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 theme === 'dark' ? 'hover:text-white' : 'hover:text-gold'
               }`}
             >
-              Offers
+              {t('nav.offers')}
             </button>
             <button
               onClick={() => {
@@ -517,8 +554,22 @@ export const Navbar: React.FC<NavbarProps> = ({
                 theme === 'dark' ? 'hover:text-white' : 'hover:text-gold'
               }`}
             >
-              Contact
+              {t('nav.contact')}
             </button>
+            {isAdmin && (
+              <button
+                onClick={() => {
+                  onToggleAdminMode();
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`text-left text-sm font-bold tracking-wider uppercase transition-colors flex items-center gap-2 border-t pt-3 border-zinc-800/20 ${
+                  theme === 'dark' ? 'text-amber-400 hover:text-amber-300' : 'text-amber-700 hover:text-amber-900'
+                }`}
+              >
+                <Shield size={14} className="text-amber-500" />
+                {isAdminMode ? t('nav.customerMode') : t('nav.adminMode')}
+              </button>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

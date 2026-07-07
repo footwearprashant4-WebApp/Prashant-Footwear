@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProductProvider, useProducts } from './context/ProductContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { SizeSelectionOverlay } from './components/SizeSelectionOverlay';
@@ -380,10 +381,12 @@ function PrashantFootwearApp() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <ProductProvider>
-        <PrashantFootwearApp />
-      </ProductProvider>
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <ProductProvider>
+          <PrashantFootwearApp />
+        </ProductProvider>
+      </AuthProvider>
+    </LanguageProvider>
   );
 }

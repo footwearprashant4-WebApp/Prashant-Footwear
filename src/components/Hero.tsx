@@ -3,6 +3,7 @@ import { Category } from '../types';
 import { motion } from 'motion/react';
 import { ChevronDown, Sparkles } from 'lucide-react';
 import { useProducts } from '../context/ProductContext';
+import { useLanguage } from '../context/LanguageContext';
 
 interface HeroProps {
   onSelectCategory: (category: Category) => void;
@@ -11,6 +12,7 @@ interface HeroProps {
 
 export const Hero: React.FC<HeroProps> = ({ onSelectCategory, onScrollToProducts }) => {
   const { heroVideoUrl, heroVideoUrl2, heroVideos, heroImages } = useProducts();
+  const { t } = useLanguage();
   const [scrollY, setScrollY] = React.useState(0);
   const [playlistIndex, setPlaylistIndex] = React.useState(0);
   const [imageIndex, setImageIndex] = React.useState(0);
@@ -161,10 +163,10 @@ export const Hero: React.FC<HeroProps> = ({ onSelectCategory, onScrollToProducts
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
             onClick={onScrollToProducts}
-            className="flex flex-col items-center gap-1 cursor-pointer group mb-4"
+            className="flex flex-col items-center gap-1 cursor-pointer group mb-4 font-sans"
           >
-            <span className="text-[10px] font-mono tracking-widest text-zinc-400 group-hover:text-gold transition-colors">
-              EXPLORE CATALOGUE
+            <span className="text-[10px] tracking-widest text-zinc-400 group-hover:text-gold transition-colors font-bold uppercase">
+              {t('nav.collection')}
             </span>
             <motion.div
               animate={{ y: [0, 4, 0] }}
@@ -175,8 +177,9 @@ export const Hero: React.FC<HeroProps> = ({ onSelectCategory, onScrollToProducts
           </motion.div>
 
           {/* Primary Categories Grid (Men, Women, Kids) */}
-          <div className="w-full flex flex-col space-y-3">
+          <div className="w-full flex flex-col space-y-3 font-sans">
             {(['Men', 'Women', 'Kids'] as Category[]).map((category, index) => {
+              const shopKey = `store.shop${category}` as any;
               return (
                 <motion.button
                   key={category}
@@ -186,7 +189,7 @@ export const Hero: React.FC<HeroProps> = ({ onSelectCategory, onScrollToProducts
                   onClick={() => onSelectCategory(category)}
                   className="w-full py-3.5 rounded-full text-xs uppercase tracking-widest font-semibold transition-all duration-300 cursor-pointer border glass-panel text-white border-white/10 hover:bg-white hover:text-black hover:border-white shadow-lg shadow-black/20"
                 >
-                  Shop {category}
+                  {t(shopKey)}
                 </motion.button>
               );
             })}

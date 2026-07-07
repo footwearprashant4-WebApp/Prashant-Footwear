@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useProducts } from '../context/ProductContext';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { Product, Order, Category, SubCategory } from '../types';
 import { 
   Plus, Trash2, Edit3, ShoppingCart, RefreshCw, BarChart2, Package, Layers, PlusCircle, Check, 
@@ -92,6 +93,7 @@ interface AdminDashboardProps {
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light', onToggleTheme, onToggleAdminMode }) => {
   const isDark = theme === 'dark';
   const { currentUser } = useAuth();
+  const { t } = useLanguage();
   const { 
     products, 
     orders, 
@@ -540,14 +542,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
             </div>
             
             {/* Logo & Adjusted Badge */}
-            <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
-              <span className={`serif-display text-base sm:text-lg md:text-2xl font-black tracking-normal uppercase transition-colors duration-300 truncate ${
+            <div className="flex flex-col items-start justify-center min-w-0">
+              <span className={`serif-display font-black tracking-normal uppercase transition-colors duration-300 flex flex-col items-start leading-[1.1] ${
                 isDark ? 'text-white' : 'text-zinc-950'
               }`}>
-                Prashant <span className="text-amber-600 dark:text-gold font-semibold">Footwear</span>
-              </span>
-              <span className="px-2.5 py-0.5 text-[8px] sm:text-[9px] md:text-[10px] font-black uppercase tracking-widest rounded-md bg-indigo-600 text-white shadow-sm shrink-0 border border-indigo-500">
-                ADMIN
+                <span className="text-[14px] sm:text-base md:text-[20px] font-black leading-none">Prashant</span>
+                <span className="text-amber-600 dark:text-gold font-bold text-[9px] sm:text-[10px] md:text-[12px] tracking-wider leading-none mt-0.5">Footwear</span>
               </span>
             </div>
 
@@ -814,7 +814,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                         setTimeout(() => {
                           const el = document.getElementById('active-workspace-panel');
                           if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }, 100);
+                          
+                          // Auto focus on customer WhatsApp input
+                          const input = document.getElementById('customer-whatsapp-input');
+                          if (input) {
+                            input.focus();
+                          }
+                        }, 250);
                       }}
                       className={`w-full text-left p-4 rounded-[22px] border transition-all duration-200 flex items-center gap-3.5 cursor-pointer hover:-translate-y-0.5 hover:shadow-md ${
                         activeTab === 'billing'
@@ -831,12 +837,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                       }`}>
                         <Receipt size={18} />
                       </div>
-                      <div className="min-w-0 flex-1">
+                      <div className="min-w-0 flex-1 font-sans">
                         <p className={`text-[11px] font-black tracking-wider uppercase leading-none ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>
-                          MAKE BILL
+                          {t('admin.quickBilling')}
                         </p>
                         <span className="text-[9px] font-medium text-slate-400 uppercase tracking-widest mt-1 block">
-                          Billing Workspace
+                          {t('admin.billing')}
                         </span>
                       </div>
                     </button>
@@ -868,12 +874,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                       }`}>
                         <PlusCircle size={18} />
                       </div>
-                      <div className="min-w-0 flex-1">
+                      <div className="min-w-0 flex-1 font-sans">
                         <p className={`text-[11px] font-black tracking-wider uppercase leading-none ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>
-                          +ADD STOCKS
+                          {t('admin.addNewProduct')}
                         </p>
                         <span className="text-[9px] font-medium text-slate-400 uppercase tracking-widest mt-1 block">
-                          Stock Management
+                          {t('store.stock')}
                         </span>
                       </div>
                     </button>
@@ -903,12 +909,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                       }`}>
                         <Package size={18} />
                       </div>
-                      <div className="min-w-0 flex-1">
+                      <div className="min-w-0 flex-1 font-sans">
                         <p className={`text-[11px] font-black tracking-wider uppercase leading-none ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>
-                          ALL STOCKS
+                          {t('admin.products')}
                         </p>
                         <span className="text-[9px] font-medium text-slate-400 uppercase tracking-widest mt-1 block">
-                          Stock Segment
+                          {t('store.stock')}
                         </span>
                       </div>
                     </button>
@@ -938,12 +944,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                       }`}>
                         <BarChart2 size={18} />
                       </div>
-                      <div className="min-w-0 flex-1">
+                      <div className="min-w-0 flex-1 font-sans">
                         <p className={`text-[11px] font-black tracking-wider uppercase leading-none ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>
-                          REPORTS
+                          {t('admin.sales')}
                         </p>
                         <span className="text-[9px] font-medium text-slate-400 uppercase tracking-widest mt-1 block">
-                          Sales Segment
+                          {t('admin.salesHistory')}
                         </span>
                       </div>
                     </button>
@@ -986,12 +992,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                       }`}>
                         <Plus size={18} />
                       </div>
-                      <div className="min-w-0 flex-1">
+                      <div className="min-w-0 flex-1 font-sans">
                         <p className={`text-[11px] font-black tracking-wider uppercase leading-none ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>
-                          LIST ITEM
+                          {t('admin.addNewProduct')}
                         </p>
                         <span className="text-[9px] font-medium text-slate-400 uppercase tracking-widest mt-1 block">
-                          Products Catalogue
+                          {t('admin.products')}
                         </span>
                       </div>
                     </button>
@@ -1021,12 +1027,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                       }`}>
                         <Cpu size={18} />
                       </div>
-                      <div className="min-w-0 flex-1">
+                      <div className="min-w-0 flex-1 font-sans">
                         <p className={`text-[11px] font-black tracking-wider uppercase leading-none ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>
-                          BRAND CONFIG (ERP)
+                          {t('admin.brandConfig')}
                         </p>
                         <span className="text-[9px] font-medium text-slate-400 uppercase tracking-widest mt-1 block">
-                          System Parameters
+                          {t('admin.brandConfig')}
                         </span>
                       </div>
                     </button>
@@ -1121,6 +1127,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                   </label>
                   <div className="relative">
                     <input
+                      id="customer-whatsapp-input"
                       type="tel"
                       inputMode="numeric"
                       pattern="[0-9]*"
@@ -1656,7 +1663,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                             win.document.close();
                           }
                         }}
-                        className="py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold flex items-center justify-center gap-2 cursor-pointer"
+                        className="py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all shadow-md active:scale-97"
                       >
                         <Printer size={14} /> Print Receipt
                       </button>
