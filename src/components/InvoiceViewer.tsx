@@ -98,8 +98,6 @@ export const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceId, onClose
   // Calculate taxes and subtotals
   const subtotal = order.items.reduce((sum: number, it: any) => sum + (it.price * it.quantity), 0);
   const discount = subtotal - order.totalAmount;
-  const cgst = Math.round(order.totalAmount * 0.09);
-  const sgst = Math.round(order.totalAmount * 0.09);
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 antialiased py-6 px-4 md:py-12 print:bg-white print:py-0 print:px-0">
@@ -171,8 +169,7 @@ export const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceId, onClose
                 Premium Multi-brand footwear retail store and custom workshop. On old Kupwad Road, Lovley Circle Sangli
               </p>
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-400 font-mono">
-                <span>GSTIN: <b className="text-slate-600">27AABCP8743G1Z2</b></span>
-                <span>Contact: <b className="text-slate-600">+91 98765 43210</b></span>
+                <span>Contact: <b className="text-slate-600">+91 95112 44447</b></span>
               </div>
             </div>
 
@@ -267,16 +264,6 @@ export const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceId, onClose
                   <span className="font-mono">-₹{discount}</span>
                 </div>
               )}
-
-              <div className="flex justify-between">
-                <span>Central GST (CGST 9%):</span>
-                <span className="font-mono text-slate-500">₹{cgst}</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span>State GST (SGST 9%):</span>
-                <span className="font-mono text-slate-500">₹{sgst}</span>
-              </div>
 
               <div className="flex justify-between font-black text-sm text-slate-950 pt-2.5 border-t border-slate-200">
                 <span className="uppercase tracking-wide">Grand Net Amount:</span>

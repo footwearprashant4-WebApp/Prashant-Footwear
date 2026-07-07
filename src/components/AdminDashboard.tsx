@@ -362,7 +362,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
     if (res.success) {
       setBillingSuccess(`Invoice ${res.id} issued successfully!`);
       
-      const receiptData = {
+       const receiptData = {
         id: res.id,
         customerMobile: finalMobile,
         customerName: customerName || 'Walk-in Client',
@@ -371,8 +371,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
         discount: computedDiscount,
         discountType: billingDiscountType,
         discountValue: billingDiscountValue,
-        cgst: Math.round(finalAmount * 0.09),
-        sgst: Math.round(finalAmount * 0.09),
         totalAmount: finalAmount,
         paymentMethod: billingPayment,
         date: new Date().toLocaleString('en-IN')
@@ -386,7 +384,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
       // Always direct to WhatsApp if a valid 10-digit customer mobile is entered
       if (targetMobile && targetMobile !== 'Walk-In' && targetMobile.length === 10) {
         const invoiceLink = `${window.location.origin}/?invoiceId=${res.id}`;
-        const waText = `*PRASHANT FOOTWEAR* 🧾%0A----------------------------%0A*Invoice:* ${res.id}%0A*Customer:* ${targetCustomer}%0A*Date:* ${receiptData.date}%0A----------------------------%0A*Items:*%0A${orderItems.map((it: any) => `- ${it.name} (UK ${it.size}) x${it.quantity} = ₹${it.price * it.quantity}`).join('%0A')}%0A----------------------------%0A*Subtotal:* ₹${subtotal}%0A${computedDiscount > 0 ? `*Discount:* -₹${computedDiscount}%0A` : ''}*Tax (GST 18%):* Included%0A*Grand Total:* *₹${finalAmount}*%0A*Paid via:* ${billingPayment}%0A----------------------------%0A*View and Print Invoice:*%0A${invoiceLink}%0A%0A_Thank you for shopping with us!_ 🙏`;
+        const waText = `*PRASHANT FOOTWEAR* 🧾%0A----------------------------%0A*Invoice:* ${res.id}%0A*Customer:* ${targetCustomer}%0A*Date:* ${receiptData.date}%0A----------------------------%0A*Items:*%0A${orderItems.map((it: any) => `- ${it.name} (UK ${it.size}) x${it.quantity} = ₹${it.price * it.quantity}`).join('%0A')}%0A----------------------------%0A*Subtotal:* ₹${subtotal}%0A${computedDiscount > 0 ? `*Discount:* -₹${computedDiscount}%0A` : ''}*Grand Total:* *₹${finalAmount}*%0A*Paid via:* ${billingPayment}%0A----------------------------%0A*View and Print Invoice:*%0A${invoiceLink}%0A%0A_Thank you for shopping with us!_ 🙏`;
         
         // Timeout to let checkout receipt state render
         setTimeout(() => {
@@ -1062,7 +1060,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
 
         {/* --- BILLING DESK PANEL --- */}
         {activeTab === 'billing' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-slate-900 relative">
+          <div className="space-y-8 animate-fade-in">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-slate-900 relative">
             
             {/* Left: Input Desk & Quick-Add (7 Cols) */}
             <div className="lg:col-span-7 bg-white border border-slate-200 rounded-3xl p-6 md:p-8 space-y-6 shadow-xl shadow-slate-100/30">
@@ -1420,8 +1419,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                   <div className="text-center space-y-1 mb-4">
                     <h4 className="font-extrabold text-xs uppercase tracking-wider">PRASHANT FOOTWEAR</h4>
                     <p className="text-[9px] text-zinc-500">On old Kupwad Road, Lovley Circle Sangli</p>
-                    <p className="text-[9px] text-zinc-500">GSTIN: 27AABCP8743G1Z2 (PROV)</p>
-                    <p className="text-[9px] text-zinc-500">Tel: +91 98765 43210</p>
+                    <p className="text-[9px] text-zinc-500">Tel: +91 95112 44447</p>
                     <p className="text-[9px] text-zinc-500 mt-2">---------------------------------------</p>
                     <p className="text-[9px] font-black text-left uppercase">Client: {customerName || 'Walk-in Client'}</p>
                     {billingMobile && <p className="text-[9px] font-black text-left uppercase">Mobile: +91 {billingMobile}</p>}
@@ -1485,14 +1483,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                             <span>-₹{disc}</span>
                           </div>
                         )}
-                        <div className="flex justify-between text-zinc-500">
-                          <span>CGST (9%):</span>
-                          <span>₹{Math.round(finalVal * 0.09)}</span>
-                        </div>
-                        <div className="flex justify-between text-zinc-500">
-                          <span>SGST (9%):</span>
-                          <span>₹{Math.round(finalVal * 0.09)}</span>
-                        </div>
                         <div className="flex justify-between font-black border-t border-zinc-200 pt-2 text-xs text-zinc-950">
                           <span>NET INVOICE TOTAL:</span>
                           <span>₹{finalVal}</span>
@@ -1576,7 +1566,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                       <div className="text-center space-y-0.5 mb-3">
                         <p className="font-extrabold text-xs">PRASHANT FOOTWEAR</p>
                         <p className="text-[8px] text-zinc-500">On old Kupwad Road, Lovley Circle Sangli</p>
-                        <p className="text-[8px] text-zinc-500">GSTIN: 27AABCP8743G1Z2</p>
+                        <p className="text-[8px] text-zinc-500">Tel: +91 95112 44447</p>
                         <p className="text-[8px] text-zinc-500">---------------------------------------</p>
                         <p className="text-[8px] text-left">INVOICE: {checkoutReceipt.id}</p>
                         <p className="text-[8px] text-left">DATE: {checkoutReceipt.date}</p>
@@ -1609,14 +1599,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                             <span>-₹{checkoutReceipt.discount}</span>
                           </div>
                         )}
-                        <div className="flex justify-between">
-                          <span>CGST (9%):</span>
-                          <span>₹{checkoutReceipt.cgst}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>SGST (9%):</span>
-                          <span>₹{checkoutReceipt.sgst}</span>
-                        </div>
                         <div className="flex justify-between font-black text-xs border-t border-zinc-200 pt-1.5 mt-1">
                           <span>GRAND TOTAL:</span>
                           <span>₹{checkoutReceipt.totalAmount}</span>
@@ -1684,7 +1666,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                         type="button"
                         onClick={() => {
                           const invoiceLink = `${window.location.origin}/?invoiceId=${checkoutReceipt.id}`;
-                          const waText = `*PRASHANT FOOTWEAR* 🧾%0A----------------------------%0A*Invoice:* ${checkoutReceipt.id}%0A*Customer:* ${checkoutReceipt.customerName}%0A*Date:* ${checkoutReceipt.date}%0A----------------------------%0A*Items:*%0A${checkoutReceipt.items.map((it: any) => `- ${it.name} (UK ${it.size}) x${it.quantity} = ₹${it.price * it.quantity}`).join('%0A')}%0A----------------------------%0A*Subtotal:* ₹${checkoutReceipt.subtotal}%0A${checkoutReceipt.discount > 0 ? `*Discount:* -₹${checkoutReceipt.discount}%0A` : ''}*Tax (GST 18%):* Included%0A*Grand Total:* *₹${checkoutReceipt.totalAmount}*%0A*Paid via:* ${checkoutReceipt.paymentMethod}%0A----------------------------%0A*View and Print Invoice:*%0A${invoiceLink}%0A%0A_Thank you for shopping with us!_ 🙏`;
+                          const waText = `*PRASHANT FOOTWEAR* 🧾%0A----------------------------%0A*Invoice:* ${checkoutReceipt.id}%0A*Customer:* ${checkoutReceipt.customerName}%0A*Date:* ${checkoutReceipt.date}%0A----------------------------%0A*Items:*%0A${checkoutReceipt.items.map((it: any) => `- ${it.name} (UK ${it.size}) x${it.quantity} = ₹${it.price * it.quantity}`).join('%0A')}%0A----------------------------%0A*Subtotal:* ₹${checkoutReceipt.subtotal}%0A${checkoutReceipt.discount > 0 ? `*Discount:* -₹${checkoutReceipt.discount}%0A` : ''}*Grand Total:* *₹${checkoutReceipt.totalAmount}*%0A*Paid via:* ${checkoutReceipt.paymentMethod}%0A----------------------------%0A*View and Print Invoice:*%0A${invoiceLink}%0A%0A_Thank you for shopping with us!_ 🙏`;
                           window.open(`https://wa.me/91${checkoutReceipt.customerMobile}?text=${waText}`, '_blank');
                         }}
                         className="py-3 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-extrabold flex items-center justify-center gap-2 cursor-pointer"
@@ -1705,6 +1687,124 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                 </div>
               </div>
             )}
+
+            </div>
+
+            {/* Generated Invoice History Logs */}
+            <div className={`border rounded-3xl p-6 md:p-8 space-y-6 ${
+              isDark ? 'bg-zinc-900/30 border-zinc-900' : 'bg-white border-slate-200/80 shadow-xl shadow-slate-100/40'
+            }`}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4 border-slate-100 dark:border-zinc-900">
+                <div>
+                  <h4 className={`text-base font-black uppercase tracking-wider flex items-center gap-2 ${
+                    isDark ? 'text-zinc-100' : 'text-slate-950'
+                  }`}>
+                    <Receipt size={18} className="text-[#5A67F2]" /> GENERATED INVOICE HISTORY LOGS
+                  </h4>
+                  <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mt-1">
+                    Live history of all local and cloud invoices ({orders.length} total sales)
+                  </p>
+                </div>
+                {orders.length > 0 && (
+                  <span className="px-3 py-1 text-[10px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 rounded-full border border-emerald-100/30">
+                    Active Session
+                  </span>
+                )}
+              </div>
+
+              {orders.length === 0 ? (
+                <div className="text-center py-12 space-y-2">
+                  <p className="text-sm font-bold text-zinc-400">No invoices generated yet</p>
+                  <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Start selling above to generate your first tax invoice</p>
+                </div>
+              ) : (
+                <div className={`divide-y max-h-[500px] overflow-y-auto pr-2 ${
+                  isDark ? 'divide-zinc-900/60' : 'divide-slate-100'
+                }`}>
+                  {[...orders]
+                    .sort((a, b) => {
+                      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                      return timeB - timeA;
+                    })
+                    .map((order, idx) => {
+                      const isWalkInName = (name?: string) => {
+                        if (!name) return true;
+                        const n = name.trim().toLowerCase();
+                        return n === '' || n === 'walk-in client' || n === 'walk-in' || n === 'walk-in customer' || n === 'walk in' || n === 'walk_in';
+                      };
+
+                      const isWalkInMobile = (mobile?: string) => {
+                        if (!mobile) return true;
+                        const m = mobile.trim().toLowerCase();
+                        return m === '' || m === 'walk-in' || m === 'n/a' || m === 'walk-in client' || m === 'walk in' || m === 'none';
+                      };
+
+                      const showClient = !isWalkInName(order.customerName);
+                      const showMobile = !isWalkInMobile(order.customerMobile);
+
+                      return (
+                        <div key={order.id || idx} className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div className="space-y-1.5">
+                            <div className="flex flex-wrap items-center gap-2.5">
+                              <span className={`font-mono text-xs font-black ${isDark ? 'text-zinc-200' : 'text-slate-900'}`}>
+                                #{order.id}
+                              </span>
+                              <span className="font-mono text-[9px] text-zinc-400">
+                                {order.createdAt ? new Date(order.createdAt).toLocaleString('en-IN') : 'N/A'}
+                              </span>
+                            </div>
+                            {(showClient || showMobile) && (
+                              <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider flex flex-wrap gap-x-4 gap-y-1">
+                                {showClient && (
+                                  <span>Client: <strong className={isDark ? 'text-zinc-300' : 'text-slate-700'}>{order.customerName}</strong></span>
+                                )}
+                                {showMobile && (
+                                  <span>Mobile: <strong className={isDark ? 'text-zinc-300' : 'text-slate-700'}>{order.customerMobile}</strong></span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-4 justify-between md:justify-end shrink-0">
+                            <div className="font-mono text-left md:text-right">
+                              <div className={`text-sm font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                                ₹{order.totalAmount}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              {/* View Action to open the invoice modal in the app */}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const receiptData = {
+                                    id: order.id,
+                                    customerMobile: order.customerMobile || 'Walk-In',
+                                    customerName: order.customerName || 'Walk-in Client',
+                                    items: order.items,
+                                    subtotal: order.subtotal || order.items.reduce((sum: number, it: any) => sum + (it.price * it.quantity), 0),
+                                    discount: order.discount || 0,
+                                    totalAmount: order.totalAmount,
+                                    paymentMethod: order.paymentMethod,
+                                    date: order.createdAt ? new Date(order.createdAt).toLocaleString('en-IN') : new Date().toLocaleString('en-IN')
+                                  };
+                                  setCheckoutReceipt(receiptData);
+                                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                                className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[9px] uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-97"
+                                title="Open Tax Invoice"
+                              >
+                                <FileText size={12} /> View Invoice
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+            </div>
 
           </div>
         )}

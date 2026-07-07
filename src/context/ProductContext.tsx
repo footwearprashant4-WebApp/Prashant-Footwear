@@ -482,7 +482,27 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const createOrder = async (orderData: Omit<Order, 'id' | 'createdAt'>) => {
-    const id = `order-${Date.now()}`;
+    const now = new Date();
+    const yy = String(now.getFullYear()).slice(-2);
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const datePrefix = `${yy}${mm}${dd}`; // e.g., "260707"
+    const prefix = `PF-${datePrefix}`;
+
+    // Find existing orders today that start with this prefix to calculate next sequence
+    const todayOrders = orders.filter(o => o.id && o.id.startsWith(prefix));
+    
+    let nextSeq = 1;
+    if (todayOrders.length > 0) {
+      const seqs = todayOrders.map(o => {
+        const seqStr = o.id.replace(prefix, '');
+        const parsed = parseInt(seqStr, 10);
+        return isNaN(parsed) ? 0 : parsed;
+      });
+      nextSeq = Math.max(...seqs) + 1;
+    }
+    
+    const id = `${prefix}${String(nextSeq).padStart(2, '0')}`;
     const path = `orders/${id}`;
     try {
       const newOrder: Order = {
