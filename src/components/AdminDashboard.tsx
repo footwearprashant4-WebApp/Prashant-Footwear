@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { useProducts } from '../context/ProductContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { LanguageToggle } from './LanguageToggle';
 import { Product, Order, Category, SubCategory } from '../types';
 import { 
   Plus, Trash2, Edit3, ShoppingCart, RefreshCw, BarChart2, Package, Layers, PlusCircle, Check, 
   AlertTriangle, DollarSign, Receipt, TrendingUp, CheckCircle, Smartphone, Upload, RotateCcw, Video,
-  Folder, FolderOpen, Image, HardDrive, Cpu, Laptop, FileImage, Sun, Moon, User, MessageSquare, Zap,
-  Printer, Share2, Percent, FileText, X, ChevronDown, Menu, Globe
+  Folder, FolderOpen, Image, HardDrive, Cpu, Laptop, FileImage, Sun, Moon, User, MessageSquare, Zap, Tag,
+  Printer, Share2, Percent, FileText, X, ChevronDown, Menu, Globe, Search, Coins, QrCode, Wifi
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
 
@@ -124,6 +125,34 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
   
   // Tabs: 'billing' | 'stock' | 'catalogue' | 'analytics' | 'erp'
   const [activeTab, setActiveTab] = useState<'billing' | 'stock' | 'catalogue' | 'analytics' | 'erp'>('billing');
+  
+  // --- STOCK FILTER STATE ---
+  const [stockFilterMode, setStockFilterMode] = useState<'category' | 'brand'>('category');
+  const [selectedStockCategory, setSelectedStockCategory] = useState<'All' | 'Men' | 'Women' | 'Kids'>('Men');
+  const [selectedStockBrand, setSelectedStockBrand] = useState<'All' | 'Walkaroo' | 'Walkmate' | 'Paragon' | 'Indus' | 'Bairathi' | 'Yono'>('Walkaroo');
+
+  // Helper to determine product brand deterministically based on product properties
+  const getProductBrand = (p: Product): string => {
+    const nameLower = p.name.toLowerCase();
+    const descLower = (p.description || '').toLowerCase();
+    
+    if (nameLower.includes('walkaroo') || descLower.includes('walkaroo')) return 'Walkaroo';
+    if (nameLower.includes('walkmate') || descLower.includes('walkmate')) return 'Walkmate';
+    if (nameLower.includes('paragon') || descLower.includes('paragon')) return 'Paragon';
+    if (nameLower.includes('indus') || descLower.includes('indus')) return 'Indus';
+    if (nameLower.includes('bairathi') || descLower.includes('bairathi')) return 'Bairathi';
+    if (nameLower.includes('yono') || descLower.includes('yono')) return 'Yono';
+    
+    // Deterministic hash assignment fallback
+    const brands = ['Walkaroo', 'Walkmate', 'Paragon', 'Indus', 'Bairathi', 'Yono'];
+    let hash = 0;
+    for (let i = 0; i < p.id.length; i++) {
+      hash = p.id.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % brands.length;
+    return brands[index];
+  };
+
   const [erpVideoIndex, setErpVideoIndex] = useState<1 | 2>(1);
   const [simActiveIndex, setSimActiveIndex] = useState<1 | 2>(1);
 
@@ -520,54 +549,87 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
 
   const COLORS = ['#C5A059', '#7D6332', '#E2D1B2', '#4B4231', '#9F8450'];
 
+  const filteredStockProducts = products.filter(p => {
+    if (stockFilterMode === 'category') {
+      if (selectedStockCategory === 'All') return true;
+      return p.category === selectedStockCategory;
+    } else {
+      if (selectedStockBrand === 'All') return true;
+      return getProductBrand(p) === selectedStockBrand;
+    }
+  });
+
   return (
     <div id="admin-dashboard-container" className={`min-h-screen pt-24 pb-12 px-6 md:px-12 transition-colors duration-500 ${
       isDark ? 'bg-zinc-950 text-white' : 'bg-[#F9F9FB] text-zinc-900'
     }`}>
-      {/* Premium Top Bar Navbar placed at the absolute top of the viewport */}
-      <header className={`fixed top-0 left-0 right-0 z-50 border-b transition-all duration-300 backdrop-blur-md px-6 md:px-12 ${
+      {/* Premium UI-Designed Top Bar Navbar */}
+      <header className={`fixed top-0 left-0 right-0 z-50 border-b transition-all duration-300 backdrop-blur-md px-4 sm:px-6 md:px-12 py-3 ${
         isDark 
-          ? 'bg-zinc-950/80 border-zinc-800/80 text-white shadow-lg shadow-black/20' 
-          : 'bg-white/95 border-slate-200/80 text-zinc-800 shadow-sm shadow-slate-200/5'
+          ? 'bg-zinc-950/85 border-zinc-900 text-white shadow-xl shadow-black/30' 
+          : 'bg-white/90 border-slate-200/60 text-zinc-800 shadow-lg shadow-slate-100/10'
       }`}>
-        <div className="max-w-7xl mx-auto h-16 sm:h-20 flex items-center justify-between w-full">
-          <div className="flex items-center gap-3 md:gap-4.5 min-w-0">
-            {/* Menu Icon */}
-            <div className={`p-2 rounded-xl transition-colors duration-200 shrink-0 ${
-              isDark 
-                ? 'text-zinc-400 bg-zinc-900/50 hover:text-white' 
-                : 'text-slate-500 bg-slate-100/60 hover:text-slate-900'
-            }`}>
-              <Menu size={18} />
-            </div>
-            
-            {/* Logo & Adjusted Badge */}
-            <div className="flex flex-col items-start justify-center min-w-0">
-              <span className={`serif-display font-black tracking-normal uppercase transition-colors duration-300 flex flex-col items-start leading-[1.1] ${
-                isDark ? 'text-white' : 'text-zinc-950'
+        <div className="max-w-7xl mx-auto flex items-center justify-between w-full gap-4">
+          {/* Left: Brand Identity & Custom SVG Logo */}
+          <div className="flex items-center gap-3 shrink-0 min-w-0">
+            {/* Elegant Custom Footwear Logo Container */}
+            <div className="relative group flex items-center justify-center">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-[#C5A059] to-amber-500 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
+              <div className={`relative p-1.5 sm:p-2 rounded-xl transition-all duration-300 border ${
+                isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-slate-200'
               }`}>
-                <span className="text-[14px] sm:text-base md:text-[20px] font-black leading-none">Prashant</span>
-                <span className="text-amber-600 dark:text-gold font-bold text-[9px] sm:text-[10px] md:text-[12px] tracking-wider leading-none mt-0.5">Footwear</span>
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-[#C5A059]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  {/* Styled Elegant Shoe Contour and Star Accent */}
+                  <path d="M15 72 C15 72, 28 66, 40 66 C52 66, 64 56, 76 48 C84 43, 89 46, 89 52 C89 60, 81 65, 69 69 C57 73, 28 75, 15 72 Z" fill="url(#designerGoldGrad)" opacity="0.25" />
+                  <path d="M12 70 C24 70, 37 60, 50 55 C60 51, 74 47, 86 52 C88 53, 88 56, 84 58 C76 63, 57 70, 32 72" stroke="currentColor" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M54 36 C54 36, 58 43, 59 53" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                  <path d="M47 30 L52 35 L47 40" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <defs>
+                    <linearGradient id="designerGoldGrad" x1="10" y1="10" x2="90" y2="90" gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stopColor="#C5A059" />
+                      <stop offset="50%" stopColor="#F5DFB1" />
+                      <stop offset="100%" stopColor="#8C6D31" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+            </div>
+
+            {/* Typography Identity */}
+            <div className="flex flex-col items-start justify-center min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className={`serif-display font-black tracking-normal uppercase text-xs sm:text-sm md:text-base leading-none ${
+                  isDark ? 'text-white' : 'text-zinc-950'
+                }`}>
+                  Prashant Admin Panel
+                </span>
+              </div>
+              <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-[#C5A059] font-black mt-0.5">
+                Footwear
               </span>
             </div>
-
-            {/* Admin Session Info */}
-            {currentUser && (
-              <div className={`hidden lg:flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-semibold shrink-0 select-none ${
-                isDark 
-                  ? 'bg-zinc-900/40 border-zinc-800/80 text-zinc-300' 
-                  : 'bg-slate-50 border-slate-200 text-slate-700'
-              }`}>
-                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#5A67F2] to-indigo-600 text-white flex items-center justify-center text-[9px] font-black uppercase shadow-sm">
-                  {currentUser.mobile ? currentUser.mobile.substring(0, 2) : 'A'}
-                </div>
-                <span className="font-mono text-[9px] tracking-wider text-slate-500 dark:text-zinc-400">SESSION: <strong className="text-slate-800 dark:text-zinc-100 font-extrabold">{currentUser.mobile}</strong></span>
-              </div>
-            )}
           </div>
 
+          {/* Center: Live Session Capsule (Hidden on mobile, beautifully formatted on desktop) */}
+          {currentUser && (
+            <div className={`hidden md:flex items-center gap-2.5 px-4 py-1.5 rounded-full border text-[10px] font-bold select-none transition-all duration-300 ${
+              isDark 
+                ? 'bg-zinc-900/30 border-zinc-800/80 text-zinc-300 shadow-inner' 
+                : 'bg-slate-50 border-slate-200 text-slate-700 shadow-inner'
+            }`}>
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="font-mono tracking-wider text-slate-400 dark:text-zinc-500">
+                ACTIVE CONSOLE: <strong className={isDark ? 'text-zinc-200' : 'text-slate-800'}>{currentUser.mobile}</strong>
+              </span>
+            </div>
+          )}
+
+          {/* Right: Premium Controls Group */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {/* Storefront return */}
+            {/* Language Toggle */}
+            <LanguageToggle isNavbarDark={isDark} />
+
+            {/* Storefront return button */}
             <button
               type="button"
               onClick={() => {
@@ -576,26 +638,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                 }
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className="h-9 md:h-10 px-3 sm:px-4.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.97] text-white text-[10px] sm:text-xs font-black uppercase tracking-widest flex items-center gap-1.5 sm:gap-2 transition-all duration-200 cursor-pointer shadow-md shadow-indigo-500/10 shrink-0"
+              className="h-8 sm:h-9 px-2.5 sm:px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.97] text-white text-[9px] sm:text-xs font-black uppercase tracking-widest flex items-center gap-1.5 transition-all duration-200 cursor-pointer shadow-md shadow-indigo-500/15 shrink-0"
               title="Return to Public Storefront"
             >
-              <Globe size={13} className="animate-spin-slow text-white" />
+              <Globe size={12} className="animate-spin-slow text-white" />
               <span className="hidden sm:inline">VIEW STORE</span>
               <span className="inline sm:hidden">STORE</span>
             </button>
 
+            {/* Theme switcher */}
             {onToggleTheme && (
               <button
                 type="button"
                 onClick={onToggleTheme}
-                className={`w-9 h-9 md:w-10 md:h-10 rounded-xl border transition-all duration-300 flex items-center justify-center cursor-pointer shadow-sm shrink-0 active:scale-[0.97] ${
+                className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl border transition-all duration-300 flex items-center justify-center cursor-pointer shadow-sm shrink-0 active:scale-[0.97] ${
                   isDark
                     ? 'bg-zinc-900 text-yellow-400 border-zinc-800 hover:text-yellow-300 hover:bg-zinc-800'
                     : 'bg-white text-zinc-600 border-slate-200 hover:text-zinc-950 hover:bg-slate-50'
                 }`}
                 title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
               >
-                {isDark ? <Sun size={15} className="text-yellow-400" /> : <Moon size={15} />}
+                {isDark ? <Sun size={13} className="text-yellow-400" /> : <Moon size={13} />}
               </button>
             )}
           </div>
@@ -752,45 +815,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                   </div>
                 </div>
 
-                {/* 2. TOTAL LIQUID CASH CARD */}
-                <div className={`p-6 rounded-[28px] border transition-all duration-300 relative overflow-hidden ${
-                  isDark 
-                    ? 'bg-zinc-900/60 border-zinc-800 text-white shadow-zinc-950/20' 
-                    : 'bg-white border-slate-150 text-slate-800 shadow-lg shadow-slate-100/30'
-                }`}>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-[10px] font-black tracking-widest text-slate-400 dark:text-zinc-500 uppercase">
-                        TOTAL LIQUID CASH
-                      </p>
-                      <h4 className={`text-2xl sm:text-3xl font-black tracking-tight mt-1.5 font-sans ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>
-                        ₹{totalRevenueVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </h4>
-                    </div>
-                    {/* Rupee Circle Container */}
-                    <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-black text-lg shadow-inner ${
-                      isDark ? 'bg-emerald-950/40 text-teal-400' : 'bg-[#E6F4EA] text-[#0F9D58]'
-                    }`}>
-                      ₹
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-slate-100/60 dark:border-zinc-800/40">
-                    <button 
-                      onClick={() => { 
-                        setActiveTab('analytics');
-                        setTimeout(() => {
-                          const el = document.getElementById('analytics-revenue-chart');
-                          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }, 150);
-                      }} 
-                      className="flex items-center gap-2 text-xs font-bold text-teal-600 dark:text-teal-400 hover:underline transition-all text-left"
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#0F9D58] shrink-0" />
-                      Click to see liquid cash info
-                    </button>
-                  </div>
-                </div>
-
                 {/* 3. DIRECT WORKSPACE NAVIGATION WIDGET */}
                 <div className={`p-6 rounded-[28px] border transition-all duration-300 ${
                   isDark 
@@ -843,43 +867,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                         </p>
                         <span className="text-[9px] font-medium text-slate-400 uppercase tracking-widest mt-1 block">
                           {t('admin.billing')}
-                        </span>
-                      </div>
-                    </button>
-
-                    {/* +ADD STOCKS / STOCK ADJUSTMENT */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveTab('stock');
-                        setTimeout(() => {
-                          const el = document.getElementById('active-workspace-panel');
-                          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                          const addStockTrigger = document.getElementById('inventory-table-container');
-                          if (addStockTrigger) addStockTrigger.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }, 100);
-                      }}
-                      className={`w-full text-left p-4 rounded-[22px] border transition-all duration-200 flex items-center gap-3.5 cursor-pointer hover:-translate-y-0.5 hover:shadow-md ${
-                        activeTab === 'stock'
-                          ? isDark 
-                            ? 'bg-emerald-950/30 border-emerald-800/80 shadow-md shadow-emerald-950/20' 
-                            : 'bg-[#ECFBF6] border-emerald-200 shadow-md shadow-emerald-100/40'
-                          : isDark 
-                            ? 'bg-zinc-950/40 border-transparent hover:border-zinc-800' 
-                            : 'bg-[#ECFBF6]/40 border-transparent hover:border-emerald-100/60'
-                      }`}
-                    >
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${
-                        isDark ? 'bg-emerald-900/40 text-emerald-400' : 'bg-[#D3F5E9] text-[#10B981]'
-                      }`}>
-                        <PlusCircle size={18} />
-                      </div>
-                      <div className="min-w-0 flex-1 font-sans">
-                        <p className={`text-[11px] font-black tracking-wider uppercase leading-none ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>
-                          {t('admin.addNewProduct')}
-                        </p>
-                        <span className="text-[9px] font-medium text-slate-400 uppercase tracking-widest mt-1 block">
-                          {t('store.stock')}
                         </span>
                       </div>
                     </button>
@@ -1067,47 +1054,66 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
         {/* --- BILLING DESK PANEL --- */}
         {activeTab === 'billing' && (
           <div className="space-y-8 animate-fade-in">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-slate-900 relative">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
             
             {/* Left: Input Desk & Quick-Add (7 Cols) */}
-            <div className="lg:col-span-7 bg-white border border-slate-200 rounded-3xl p-6 md:p-8 space-y-6 shadow-xl shadow-slate-100/30">
+            <div className={`lg:col-span-7 p-6 md:p-8 space-y-6 border transition-all duration-300 rounded-3xl ${
+              isDark 
+                ? 'bg-zinc-900/60 border-zinc-800 text-white shadow-2xl shadow-black/20' 
+                : 'bg-white border-slate-100 text-slate-900 shadow-xl shadow-slate-100/30'
+            }`}>
               
               {/* Header */}
-              <div className="flex items-center justify-between pb-5 border-b border-slate-100">
+              <div className={`flex items-center justify-between pb-5 border-b ${
+                isDark ? 'border-zinc-800' : 'border-slate-100'
+              }`}>
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-indigo-50 rounded-xl text-indigo-600 shadow-sm">
-                    <FileText size={22} className="stroke-[2.5px] text-[#5A67F2]" />
+                  <div className={`p-2.5 rounded-xl shadow-sm ${
+                    isDark ? 'bg-indigo-950/40 text-indigo-400 border border-indigo-900/40' : 'bg-indigo-50 text-indigo-600'
+                  }`}>
+                    <FileText size={20} className="stroke-[2.5px]" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-[#111C44] uppercase tracking-wider text-base sm:text-lg flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 leading-tight">
-                      <span>PRASHANT FOOTWEAR</span>
-                      <span className="text-[#5A67F2] font-black text-xs sm:text-sm bg-indigo-50/50 border border-indigo-100/30 px-2 py-0.5 rounded-md">BILLING CENTER</span>
+                    <h3 className={`font-black uppercase tracking-wider text-sm sm:text-base flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 leading-tight ${
+                      isDark ? 'text-zinc-100' : 'text-[#111C44]'
+                    }`}>
+                      <span>Prashant Footwear</span>
+                      <span className={`font-black text-[10px] px-2 py-0.5 rounded-md border tracking-widest ${
+                        isDark 
+                          ? 'text-indigo-400 border-indigo-900/50 bg-indigo-950/20' 
+                          : 'text-[#5A67F2] border-indigo-100/60 bg-indigo-50/50'
+                      }`}>BILLING CENTER</span>
                     </h3>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Premium POS Workstation & Smart Receipts</p>
                   </div>
                 </div>
-                <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 border border-emerald-100/80 px-2.5 py-1 rounded-full uppercase tracking-widest font-mono shrink-0 hidden sm:inline-block animate-pulse">
-                  ● STATION ONLINE
-                </span>
+                <div className={`text-[9px] font-black px-2.5 py-1 rounded-full border uppercase tracking-widest font-mono shrink-0 hidden sm:flex items-center gap-1.5 animate-pulse ${
+                  isDark
+                    ? 'text-emerald-400 bg-emerald-950/20 border-emerald-900/50'
+                    : 'text-emerald-600 bg-emerald-50 border-emerald-100/80'
+                }`}>
+                  <Wifi size={10} className="stroke-[2.5px]" /> STATION ONLINE
+                </div>
               </div>
 
               {billingError && (
-                <div className="p-4 bg-rose-50 border border-rose-100 text-rose-600 text-xs rounded-2xl font-bold flex items-center gap-2 animate-pulse">
+                <div className="p-4 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 text-rose-600 dark:text-rose-400 text-xs rounded-2xl font-bold flex items-center gap-2 animate-pulse">
                   <AlertTriangle size={14} className="shrink-0" /> {billingError}
                 </div>
               )}
               {billingSuccess && (
-                <div className="p-4 bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs rounded-2xl font-bold flex items-center gap-2">
-                  <CheckCircle size={14} className="text-emerald-600 shrink-0" /> {billingSuccess}
+                <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs rounded-2xl font-bold flex items-center gap-2">
+                  <CheckCircle size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" /> {billingSuccess}
                 </div>
               )}
 
               {/* STEP 1: CUSTOMER NAME & WHATSAPP (OPTIONAL) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* CUSTOMER NAME (OPTIONAL) */}
                 <div className="space-y-2">
-                  <label className="text-[11px] sm:text-xs font-extrabold text-[#111C44] uppercase tracking-wider flex items-center gap-1.5">
-                    <span className="text-[13px] sm:text-[15px]">👤</span> CUSTOMER NAME (OPTIONAL)
+                  <label className={`text-[10px] sm:text-xs font-black uppercase tracking-wider flex items-center gap-2 ${
+                    isDark ? 'text-zinc-300' : 'text-slate-700'
+                  }`}>
+                    <User size={14} className={isDark ? 'text-zinc-400' : 'text-slate-400'} /> CUSTOMER NAME
                   </label>
                   <div className="relative">
                     <input
@@ -1115,15 +1121,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                       placeholder="e.g. Walk-in / Enter client name"
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
-                      className="w-full bg-white border-2 border-[#D9E2EC] hover:border-[#BCCCDC] focus:border-indigo-600 rounded-2xl py-3 px-4 text-xs font-semibold outline-none text-slate-800 transition-all font-sans placeholder-[#9FB3C8] shadow-sm shadow-slate-500/5"
+                      className={`w-full rounded-2xl py-3 px-4 text-xs font-semibold outline-none transition-all duration-300 shadow-sm ${
+                        isDark 
+                          ? 'bg-zinc-950/80 border border-zinc-800 text-white placeholder-zinc-600 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10' 
+                          : 'bg-white border border-slate-200 text-slate-800 placeholder-slate-400 focus:border-[#5A67F2] focus:ring-4 focus:ring-[#5A67F2]/10'
+                      }`}
                     />
                   </div>
                 </div>
 
                 {/* CUSTOMER WHATSAPP (OPTIONAL) */}
                 <div className="space-y-2">
-                  <label className="text-[11px] sm:text-xs font-extrabold text-[#111C44] uppercase tracking-wider flex items-center gap-1.5">
-                    <span className="text-[13px] sm:text-[15px]">💬</span> CUSTOMER WHATSAPP (OPTIONAL)
+                  <label className={`text-[10px] sm:text-xs font-black uppercase tracking-wider flex items-center gap-2 ${
+                    isDark ? 'text-zinc-300' : 'text-slate-700'
+                  }`}>
+                    <MessageSquare size={14} className={isDark ? 'text-zinc-400' : 'text-slate-400'} /> CUSTOMER WHATSAPP
                   </label>
                   <div className="relative">
                     <input
@@ -1132,25 +1144,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                       inputMode="numeric"
                       pattern="[0-9]*"
                       maxLength={10}
-                      placeholder="e.g. 9876543210 (Optional)"
+                      placeholder="e.g. 9876543210"
                       value={billingMobile}
                       onChange={(e) => {
                         const val = e.target.value.replace(/\D/g, '');
                         setBillingMobile(val);
                       }}
-                      className="w-full bg-white border-2 border-[#D9E2EC] hover:border-[#BCCCDC] focus:border-indigo-600 rounded-2xl py-3 px-4 text-xs font-bold font-mono outline-none text-slate-900 transition-all placeholder-[#9FB3C8] shadow-sm shadow-slate-500/5"
+                      className={`w-full rounded-2xl py-3 px-4 text-xs font-bold font-mono outline-none transition-all duration-300 shadow-sm ${
+                        isDark 
+                          ? 'bg-zinc-950/80 border border-zinc-800 text-white placeholder-zinc-600 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10' 
+                          : 'bg-white border border-slate-200 text-slate-900 placeholder-slate-400 focus:border-[#5A67F2] focus:ring-4 focus:ring-[#5A67F2]/10'
+                      }`}
                     />
                   </div>
 
                   {/* Direct Whatsapp button action */}
                   {billingMobile.length === 10 && (
-                    <div className="flex items-center gap-2 mt-2">
+                    <div className="flex items-center gap-2 mt-2 animate-fade-in">
                       <button
                         type="button"
                         onClick={() => window.open(`https://wa.me/91${billingMobile}`, '_blank')}
-                        className="py-1 px-2.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 text-emerald-700 font-bold text-[9px] rounded-lg flex items-center gap-1 transition-all cursor-pointer whitespace-nowrap"
+                        className={`py-1.5 px-3 border text-[9px] font-black rounded-lg flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+                          isDark
+                            ? 'bg-emerald-950/30 hover:bg-emerald-900/30 border-emerald-900/50 text-emerald-400'
+                            : 'bg-emerald-50 hover:bg-emerald-100 border-emerald-100 text-emerald-700'
+                        }`}
                       >
-                        <MessageSquare size={11} className="fill-emerald-600/10 text-emerald-600" /> Open Chat with {billingMobile}
+                        <MessageSquare size={12} className={isDark ? 'text-emerald-400' : 'text-emerald-600'} /> Open Chat with {billingMobile}
                       </button>
                     </div>
                   )}
@@ -1158,13 +1178,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
               </div>
 
               {showNextSteps ? (
-                <div className="bg-emerald-50/70 border border-emerald-200 rounded-3xl p-6 sm:p-8 text-center space-y-6 shadow-sm">
+                <div className={`border rounded-3xl p-6 sm:p-8 text-center space-y-6 shadow-sm ${
+                  isDark ? 'bg-zinc-950/40 border-zinc-800' : 'bg-emerald-50/50 border-emerald-100'
+                }`}>
                   <div className="space-y-2">
-                    <div className="w-12 h-12 bg-emerald-100 border border-emerald-200 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-1">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-1 border ${
+                      isDark ? 'bg-emerald-950/40 border-emerald-800 text-emerald-400' : 'bg-emerald-100 border-emerald-200 text-emerald-600'
+                    }`}>
                       <Check size={24} className="stroke-[3.5px]" />
                     </div>
-                    <h3 className="text-base sm:text-lg font-black text-slate-900 uppercase tracking-wider">Style Added to Draft Bill!</h3>
-                    <p className="text-xs font-semibold text-slate-500">Would you like to add another item, or process checkout now?</p>
+                    <h3 className={`text-base sm:text-lg font-black uppercase tracking-wider ${isDark ? 'text-white' : 'text-slate-900'}`}>Style Added to Draft Bill!</h3>
+                    <p className={`text-xs font-semibold ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>Would you like to add another item, or process checkout now?</p>
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-3.5 justify-center max-w-md mx-auto">
@@ -1172,7 +1196,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                     <button
                       type="button"
                       onClick={() => setShowNextSteps(false)}
-                      className="flex-1 py-3.5 px-5 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 font-black text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-97"
+                      className={`flex-1 py-3.5 px-5 rounded-xl border font-black text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-97 ${
+                        isDark 
+                          ? 'bg-zinc-900 hover:bg-zinc-800 border-zinc-800 text-zinc-300' 
+                          : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-800'
+                      }`}
                     >
                       <Plus size={15} className="stroke-[3px]" /> Add One More Item
                     </button>
@@ -1181,7 +1209,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                     <button
                       type="button"
                       onClick={handleCheckoutBill}
-                      className="flex-1 py-3.5 px-5 rounded-xl bg-[#00966B] hover:bg-[#007A55] text-white font-black text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-emerald-500/10 active:scale-97"
+                      className="flex-1 py-3.5 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-emerald-500/10 active:scale-97"
                     >
                       <FileText size={15} className="stroke-[2.5px]" /> Make Invoice
                     </button>
@@ -1189,18 +1217,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                 </div>
               ) : (
                 /* ⚡ STEP 3: FAST POS ENTRY WORKSPACE */
-                <div className="bg-[#F0F4F8]/70 border border-[#D9E2EC] rounded-3xl p-6 space-y-5 shadow-sm">
+                <div className={`rounded-3xl p-6 space-y-5 border transition-all duration-300 ${
+                  isDark
+                    ? 'bg-zinc-950/40 border-zinc-800/80'
+                    : 'bg-slate-50/70 border-slate-200/60'
+                }`}>
                   
                   {/* Inner Header with Lightning & Plus & Fast POS Entry text */}
-                  <div className="flex items-center justify-between pb-3 border-b border-[#D9E2EC]/50">
-                    <div className="flex items-center gap-1.5 text-[#0F172A]">
-                      <span className="text-emerald-500 font-extrabold text-base sm:text-lg">+</span>
-                      <Zap size={16} className="text-amber-500 fill-amber-400 animate-pulse" />
-                      <span className="font-extrabold text-[11px] sm:text-xs uppercase tracking-wider text-[#1E3A8A]">
+                  <div className={`flex items-center justify-between pb-3 border-b ${
+                    isDark ? 'border-zinc-800/80' : 'border-slate-200/60'
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      <div className={`p-1 rounded-lg ${isDark ? 'bg-amber-500/10' : 'bg-amber-50'}`}>
+                        <Zap size={14} className="text-amber-500 fill-amber-500/30 animate-pulse" />
+                      </div>
+                      <span className={`font-black text-[10px] sm:text-xs uppercase tracking-wider ${
+                        isDark ? 'text-zinc-300' : 'text-slate-700'
+                      }`}>
                         SEARCH OR ADD FOOTWEAR STYLE
                       </span>
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[#1E3A8A] font-sans">
+                    <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${
+                      isDark ? 'bg-zinc-800 text-zinc-400' : 'bg-slate-200/60 text-slate-500'
+                    }`}>
                       FAST POS ENTRY
                     </span>
                   </div>
@@ -1210,13 +1249,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                     
                     {/* Article Number input */}
                     <div className="space-y-1.5 relative">
-                      <label className="text-[10px] font-extrabold text-[#1E293B] uppercase tracking-wider block">
+                      <label className={`text-[10px] font-black uppercase tracking-wider block ${
+                        isDark ? 'text-zinc-400' : 'text-slate-600'
+                      }`}>
                         ARTICLE NUMBER
                       </label>
                       <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
+                          <Search size={14} />
+                        </div>
                         <input
                           type="text"
-                          placeholder="e.g. 101"
+                          placeholder="e.g. Style Code or Name"
                           value={billingArticleNumber}
                           onFocus={() => setIsArticleDropdownOpen(true)}
                           onChange={(e) => {
@@ -1232,73 +1276,83 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                               }
                             }
                           }}
-                          className="w-full bg-white border-2 border-[#1E293B] focus:border-indigo-600 rounded-xl py-3 px-3.5 text-xs font-bold outline-none text-slate-900 font-mono transition-all"
+                          className={`w-full rounded-2xl py-3 pl-10 pr-10 text-xs font-bold outline-none font-mono transition-all duration-300 shadow-sm ${
+                            isDark
+                              ? 'bg-zinc-900 border border-zinc-800 text-white focus:border-indigo-500'
+                              : 'bg-white border border-slate-200 text-slate-900 focus:border-[#5A67F2]'
+                          }`}
                         />
                         <button
                           type="button"
                           onClick={() => setIsArticleDropdownOpen(!isArticleDropdownOpen)}
-                          className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-950 cursor-pointer"
+                          className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
                         >
                           <ChevronDown size={16} className={`transition-transform duration-200 ${isArticleDropdownOpen ? 'rotate-180' : ''}`} />
                         </button>
                       </div>
 
-                      {/* Choice Dropdown Overlay catcher to close on click outside */}
+                      {/* Dropdown list */}
                       {isArticleDropdownOpen && (
-                        <div 
-                          className="fixed inset-0 z-10" 
-                          onClick={() => setIsArticleDropdownOpen(false)} 
-                        />
-                      )}
-
-                      {/* Choice Dropdown list */}
-                      {isArticleDropdownOpen && (
-                        <div className="absolute z-20 w-full bg-white border-2 border-slate-900 rounded-xl shadow-2xl mt-1 overflow-hidden divide-y divide-slate-100 max-h-[220px] overflow-y-auto">
-                          {products.filter(p => 
-                            !billingArticleNumber || 
-                            p.id.toLowerCase().includes(billingArticleNumber.toLowerCase()) ||
-                            p.name.toLowerCase().includes(billingArticleNumber.toLowerCase())
-                          ).length === 0 ? (
-                            <div className="p-4 text-center text-xs text-slate-400 font-mono uppercase">
-                              No Footwear Styles Found
-                            </div>
-                          ) : (
-                            products
-                              .filter(p => 
-                                !billingArticleNumber || 
-                                p.id.toLowerCase().includes(billingArticleNumber.toLowerCase()) ||
-                                p.name.toLowerCase().includes(billingArticleNumber.toLowerCase())
-                              )
-                              .map(p => (
-                                <button
-                                  key={p.id}
-                                  type="button"
-                                  onClick={() => {
-                                    setBillingArticleNumber(p.id);
-                                    setBillingPrice(p.price);
-                                    setSelectedBillProdId(p.id);
-                                    if (p.sizes.length > 0) {
-                                      setSelectedBillSize(p.sizes[0]);
-                                    }
-                                    setBillingError(null);
-                                    setIsArticleDropdownOpen(false);
-                                  }}
-                                  className="w-full text-left px-3.5 py-2.5 hover:bg-slate-50 transition-colors flex justify-between items-center text-xs cursor-pointer gap-2"
-                                >
-                                  <div className="flex items-center gap-2 min-w-0">
-                                    <div className="w-8 h-8 rounded bg-slate-100 overflow-hidden shrink-0 border border-slate-200/50">
-                                      <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        <>
+                          <div 
+                            className="fixed inset-0 z-10" 
+                            onClick={() => setIsArticleDropdownOpen(false)} 
+                          />
+                          <div className={`absolute z-20 w-full rounded-2xl shadow-2xl mt-1.5 overflow-hidden border max-h-[220px] overflow-y-auto divide-y ${
+                            isDark 
+                              ? 'bg-zinc-900 border-zinc-800 divide-zinc-800/50' 
+                              : 'bg-white border-slate-200 divide-slate-100'
+                          }`}>
+                            {products.filter(p => 
+                              !billingArticleNumber || 
+                              p.id.toLowerCase().includes(billingArticleNumber.toLowerCase()) ||
+                              p.name.toLowerCase().includes(billingArticleNumber.toLowerCase())
+                            ).length === 0 ? (
+                              <div className="p-4 text-center text-xs text-zinc-400 font-mono uppercase">
+                                No Footwear Styles Found
+                              </div>
+                            ) : (
+                              products
+                                .filter(p => 
+                                  !billingArticleNumber || 
+                                  p.id.toLowerCase().includes(billingArticleNumber.toLowerCase()) ||
+                                  p.name.toLowerCase().includes(billingArticleNumber.toLowerCase())
+                                )
+                                .map(p => (
+                                  <button
+                                    key={p.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setBillingArticleNumber(p.id);
+                                      setBillingPrice(p.price);
+                                      setSelectedBillProdId(p.id);
+                                      if (p.sizes.length > 0) {
+                                        setSelectedBillSize(p.sizes[0]);
+                                      }
+                                      setBillingError(null);
+                                      setIsArticleDropdownOpen(false);
+                                    }}
+                                    className={`w-full text-left px-3.5 py-3 transition-colors flex justify-between items-center text-xs cursor-pointer gap-2 ${
+                                      isDark ? 'hover:bg-zinc-800/60' : 'hover:bg-slate-50'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-2.5 min-w-0">
+                                      <div className="w-9 h-9 rounded-lg bg-zinc-100 overflow-hidden shrink-0 border border-zinc-200/50">
+                                        <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                      </div>
+                                      <div className="min-w-0">
+                                        <p className={`font-black truncate uppercase text-[11px] ${
+                                          isDark ? 'text-zinc-200' : 'text-slate-800'
+                                        }`}>{p.name}</p>
+                                        <p className="text-[9px] text-zinc-400 font-mono">ID: {p.id} • Stock: {p.stock} • UK {p.sizes.join(',')}</p>
+                                      </div>
                                     </div>
-                                    <div className="min-w-0">
-                                      <p className="font-black text-slate-900 truncate uppercase text-[11px]">{p.name}</p>
-                                      <p className="text-[9px] text-slate-400 font-mono">ID: {p.id} • Stock: {p.stock} • UK {p.sizes.join(',')}</p>
-                                    </div>
-                                  </div>
-                                  <span className="font-mono font-black text-emerald-600 shrink-0">₹{p.price}</span>
-                                </button>
-                              ))
-                          )}
-                        </div>
+                                    <span className="font-mono font-black text-emerald-500 shrink-0">₹{p.price}</span>
+                                  </button>
+                                ))
+                            )}
+                          </div>
+                        </>
                       )}
                     </div>
 
@@ -1307,13 +1361,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                       
                       {/* Size Selection */}
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-extrabold text-[#1E293B] uppercase tracking-wider block">
+                        <label className={`text-[10px] font-black uppercase tracking-wider block ${
+                          isDark ? 'text-zinc-400' : 'text-slate-600'
+                        }`}>
                           SIZE
                         </label>
                         <select
                           value={selectedBillSize || ''}
                           onChange={(e) => setSelectedBillSize(Number(e.target.value))}
-                          className="w-full bg-white border-2 border-[#1E293B] focus:border-indigo-600 rounded-xl py-3 px-3 text-xs font-bold outline-none text-slate-900 transition-all cursor-pointer"
+                          className={`w-full rounded-2xl py-3 px-3 text-xs font-bold outline-none transition-all duration-300 cursor-pointer ${
+                            isDark
+                              ? 'bg-zinc-900 border border-zinc-800 text-white focus:border-indigo-500'
+                              : 'bg-white border border-slate-200 text-slate-900 focus:border-[#5A67F2]'
+                          }`}
                         >
                           <option value="">Select Size</option>
                           {billingSelectedProduct ? (
@@ -1330,11 +1390,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
 
                       {/* Price Input (₹) */}
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-extrabold text-[#1E293B] uppercase tracking-wider block">
+                        <label className={`text-[10px] font-black uppercase tracking-wider block ${
+                          isDark ? 'text-zinc-400' : 'text-slate-600'
+                        }`}>
                           PRICE (₹)
                         </label>
                         <div className="relative">
-                          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-emerald-700 font-bold text-xs font-mono">
+                          <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-emerald-500 font-black text-xs font-mono pointer-events-none">
                             ₹
                           </span>
                           <input
@@ -1342,14 +1404,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                             placeholder="Price"
                             value={billingPrice}
                             onChange={(e) => setBillingPrice(e.target.value ? Number(e.target.value) : '')}
-                            className="w-full bg-white border-2 border-[#00966B] focus:border-[#007A55] rounded-xl py-3 pl-7 pr-3 text-xs font-black outline-none text-slate-900 font-mono transition-all placeholder-[#A0AEC0]"
+                            className={`w-full rounded-2xl py-3 pl-7 pr-3 text-xs font-black outline-none font-mono transition-all duration-300 ${
+                              isDark
+                                ? 'bg-zinc-900 border border-emerald-950/80 text-white focus:border-emerald-500'
+                                : 'bg-white border border-emerald-600/80 focus:border-emerald-700 text-slate-900'
+                            }`}
                           />
                         </div>
                       </div>
 
                       {/* Quantity Input */}
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-extrabold text-[#1E293B] uppercase tracking-wider block font-sans">
+                        <label className={`text-[10px] font-black uppercase tracking-wider block ${
+                          isDark ? 'text-zinc-400' : 'text-slate-600'
+                        }`}>
                           QTY
                         </label>
                         <div className="relative">
@@ -1358,7 +1426,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                             min="1"
                             value={selectedBillQty}
                             onChange={(e) => setSelectedBillQty(Math.max(1, Number(e.target.value)))}
-                            className="w-full bg-white border-2 border-[#1E293B] focus:border-indigo-600 rounded-xl py-3 px-3 text-center font-black text-xs text-slate-900 outline-none font-mono"
+                            className={`w-full rounded-2xl py-3 px-3 text-center font-black text-xs outline-none font-mono transition-all duration-300 ${
+                              isDark
+                                ? 'bg-zinc-900 border border-zinc-800 text-white focus:border-indigo-500'
+                                : 'bg-white border border-slate-200 text-slate-900 focus:border-[#5A67F2]'
+                            }`}
                           />
                         </div>
                       </div>
@@ -1369,7 +1441,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                     <button
                       type="button"
                       onClick={handleAddBillItem}
-                      className="w-full py-3.5 rounded-xl bg-[#00966B] hover:bg-[#007A55] text-white text-xs font-black tracking-widest uppercase transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-emerald-500/10 active:scale-98"
+                      className="w-full py-3.5 rounded-2xl bg-[#00966B] hover:bg-[#007A55] text-white text-xs font-black tracking-widest uppercase transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-500/10 active:scale-98"
                     >
                       <Plus size={15} className="stroke-[3.5px]" /> ADD TO DRAFT BILL
                     </button>
@@ -1378,25 +1450,38 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                 </div>
               )}
 
+
+
               {/* ⚡ STEP 5: SELECT PAYMENT MODE */}
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-900 uppercase tracking-wider block">
+                <label className={`text-[10px] font-black uppercase tracking-wider block ${
+                  isDark ? 'text-zinc-400' : 'text-slate-600'
+                }`}>
                   [05] SELECT PAYMENT OPTION
                 </label>
-                <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200/60">
+                <div className="grid grid-cols-2 gap-2 bg-slate-100 dark:bg-zinc-950 p-1 rounded-xl border border-slate-200/60 dark:border-zinc-800/80">
                   {['Cash', 'UPI'].map(pm => (
                     <button
                       key={pm}
                       type="button"
                       onClick={() => setBillingPayment(pm)}
-                      className={`py-3 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all cursor-pointer ${
+                      className={`py-3 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                         billingPayment === pm 
-                          ? 'bg-white text-slate-950 shadow-md font-black border border-slate-200' 
-                          : 'text-slate-500 hover:text-slate-950'
+                          ? 'bg-white dark:bg-zinc-900 text-slate-950 dark:text-white shadow-md font-black border border-slate-200/50 dark:border-zinc-800' 
+                          : 'text-slate-500 hover:text-slate-950 dark:hover:text-zinc-300'
                       }`}
                     >
-                      {pm === 'Cash' && '💵 CASH'}
-                      {pm === 'UPI' && '📱 UPI / QR'}
+                      {pm === 'Cash' ? (
+                        <>
+                          <Coins size={12} className="text-amber-500" />
+                          <span>💵 CASH</span>
+                        </>
+                      ) : (
+                        <>
+                          <QrCode size={12} className="text-indigo-500" />
+                          <span>📱 UPI / QR</span>
+                        </>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -1405,29 +1490,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
             </div>
 
             {/* Right: Digital Thermal Receipt Workstation (5 Cols) */}
-            <div className="lg:col-span-5 bg-zinc-950 border border-zinc-900 rounded-3xl p-6 flex flex-col justify-between text-zinc-100 shadow-2xl relative overflow-hidden">
+            <div className={`lg:col-span-5 border rounded-3xl p-6 flex flex-col justify-between shadow-2xl relative overflow-hidden transition-all duration-300 ${
+              isDark 
+                ? 'bg-zinc-950 border-zinc-900 text-zinc-100' 
+                : 'bg-slate-900 border-slate-800 text-white'
+            }`}>
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
               
               <div>
                 {/* Header */}
-                <h3 className="font-mono text-xs uppercase tracking-widest text-zinc-400 flex items-center justify-between border-b border-zinc-900 pb-4">
+                <h3 className="font-mono text-xs uppercase tracking-widest text-zinc-400 flex items-center justify-between border-b border-zinc-800/80 pb-4">
                   <span className="flex items-center gap-2">
                     <FileText size={14} className="text-gold" /> In-Store Draft Bill
                   </span>
-                  <span className="text-zinc-500">
+                  <span className="text-zinc-500 font-bold font-mono">
                     {billingItems.length} Styles
                   </span>
                 </h3>
 
                 {/* Thermal Ticket Container */}
-                <div className="bg-white text-zinc-950 font-mono text-[11px] p-5 rounded-2xl border border-zinc-200 shadow-inner mt-4 overflow-hidden max-h-[360px] overflow-y-auto">
+                <div className="bg-white text-zinc-950 font-mono text-[11px] p-5 rounded-2xl border border-zinc-200 shadow-inner mt-4 overflow-hidden max-h-[360px] overflow-y-auto relative">
+                  
+                  {/* Real thermal paper serrated/jagged edge effect */}
+                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-200/40 via-transparent to-transparent pointer-events-none" />
                   
                   {/* Shop Details */}
                   <div className="text-center space-y-1 mb-4">
                     <h4 className="font-extrabold text-xs uppercase tracking-wider">PRASHANT FOOTWEAR</h4>
-                    <p className="text-[9px] text-zinc-500">On old Kupwad Road, Lovley Circle Sangli</p>
-                    <p className="text-[9px] text-zinc-500">Tel: +91 95112 44447</p>
-                    <p className="text-[9px] text-zinc-500 mt-2">---------------------------------------</p>
+                    <p className="text-[9px] text-zinc-500 font-sans">On old Kupwad Road, Lovley Circle Sangli</p>
+                    <p className="text-[9px] text-zinc-500 font-sans">Tel: +91 95112 44447</p>
+                    <p className="text-[9px] text-zinc-500">---------------------------------------</p>
                     <p className="text-[9px] font-black text-left uppercase">Client: {customerName || 'Walk-in Client'}</p>
                     {billingMobile && <p className="text-[9px] font-black text-left uppercase">Mobile: +91 {billingMobile}</p>}
                     <p className="text-[9px] text-zinc-500">---------------------------------------</p>
@@ -1480,12 +1572,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                     const finalVal = Math.max(0, sub - disc);
                     return (
                       <div className="space-y-1.5 text-[10px]">
-                        <div className="flex justify-between text-zinc-600">
+                        <div className="flex justify-between text-zinc-600 font-bold">
                           <span>SUB-TOTAL:</span>
                           <span>₹{sub}</span>
                         </div>
                         {disc > 0 && (
-                          <div className="flex justify-between text-rose-600 font-black">
+                          <div className="flex justify-between text-rose-600 font-extrabold">
                             <span>DISCOUNT:</span>
                             <span>-₹{disc}</span>
                           </div>
@@ -1516,7 +1608,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                   : billingDiscountValue;
                 const finalVal = Math.max(0, sub - disc);
                 return (
-                  <div className="pt-5 border-t border-zinc-900 mt-5 space-y-4">
+                  <div className="pt-5 border-t border-zinc-800/80 mt-5 space-y-4">
                     <div className="flex justify-between font-mono text-xs text-zinc-400">
                       <span>DRAFT BILL NET:</span>
                       <span>₹{sub}</span>
@@ -1527,21 +1619,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                         <span>-₹{disc}</span>
                       </div>
                     )}
-                    <div className="flex justify-between font-mono text-base font-black border-t border-zinc-900/60 pt-3">
-                      <span className="text-white uppercase tracking-wider text-xs">GRAND TOTAL VALUE:</span>
-                      <span className="text-gold">₹{finalVal}</span>
+                    <div className="flex justify-between font-mono text-base font-black border-t border-zinc-800/40 pt-3">
+                      <span className="text-white uppercase tracking-wider text-xs flex items-center">GRAND TOTAL VALUE:</span>
+                      <span className="text-gold font-mono text-lg font-black">₹{finalVal}</span>
                     </div>
 
                     <button
                       type="button"
                       onClick={handleCheckoutBill}
-                      className="w-full py-4 rounded-xl bg-gold text-black font-extrabold text-xs tracking-widest uppercase transition-all hover:bg-yellow-400 flex items-center justify-center gap-1.5 shadow-xl shadow-gold/10 cursor-pointer active:scale-98"
+                      className="w-full py-4 rounded-xl bg-gold hover:bg-yellow-400 text-black font-extrabold text-xs tracking-widest uppercase transition-all flex items-center justify-center gap-1.5 shadow-xl shadow-gold/10 cursor-pointer active:scale-98"
                     >
                       <Check size={14} className="stroke-[3px]" /> PROCESS INVOICE CHECKOUT
                     </button>
                   </div>
                 );
               })()}
+            </div>
             </div>
 
             {/* Receipt Modal Display (checkoutReceipt) */}
@@ -1695,8 +1788,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
               </div>
             )}
 
-            </div>
-
             {/* Generated Invoice History Logs */}
             <div className={`border rounded-3xl p-6 md:p-8 space-y-6 ${
               isDark ? 'bg-zinc-900/30 border-zinc-900' : 'bg-white border-slate-200/80 shadow-xl shadow-slate-100/40'
@@ -1821,7 +1912,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
           <div id="inventory-table-container" className={`border rounded-3xl p-6 md:p-8 space-y-6 ${
             isDark ? 'bg-zinc-900/30 border-zinc-900' : 'bg-white border-slate-200/80 shadow-xl shadow-slate-100/40'
           }`}>
-            <div className={`flex items-center justify-between border-b pb-4 ${
+            <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4 ${
               isDark ? 'border-zinc-900' : 'border-slate-100'
             }`}>
               <div>
@@ -1832,22 +1923,107 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                 </h3>
                 <p className="text-xs text-zinc-500 mt-1">Monitor real-time shoe sizes, current warehouse stock, and change unit pricing instantly.</p>
               </div>
-              <span className={`text-xs font-mono font-bold px-3 py-1 rounded-full border ${
-                isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-400' : 'bg-slate-50 border-slate-200 text-slate-600'
-              }`}>
-                Total Styles: {products.length}
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={`text-[11px] font-mono font-bold px-3 py-1 rounded-full border ${
+                  isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-400' : 'bg-slate-50 border-slate-200 text-slate-600'
+                }`}>
+                  Showing {filteredStockProducts.length} of {products.length} Styles
+                </span>
+              </div>
+            </div>
+
+            {/* Elegant UI-Designer Selection Matrix */}
+            <div className={`p-5 rounded-2xl border transition-all duration-300 ${
+              isDark ? 'bg-zinc-950/40 border-zinc-900' : 'bg-slate-50/50 border-slate-200/60 shadow-sm'
+            } space-y-5`}>
+              {/* Category Filter Level */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-3.5 bg-indigo-500 rounded-full"></span>
+                  <span className={`text-[11px] font-black uppercase tracking-wider ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
+                    Filter By Category
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(['Men', 'Women', 'Kids'] as const).map((cat) => {
+                    const count = products.filter(p => p.category === cat).length;
+                    const isSelected = selectedStockCategory === cat;
+                    return (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => setSelectedStockCategory(cat)}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center gap-2 ${
+                          isSelected
+                            ? isDark 
+                              ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-500/10' 
+                              : 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                            : isDark
+                              ? 'bg-zinc-900/40 border-zinc-850 text-zinc-400 hover:text-white hover:bg-zinc-900/80'
+                              : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-950'
+                        }`}
+                      >
+                        <span className="tracking-wide">
+                          {cat === 'Men' ? '👨 Men' : cat === 'Women' ? '👩 Women' : '👶 Kids'}
+                        </span>
+                        <span className={`text-[9px] font-mono font-black px-1.5 py-0.5 rounded-full ${
+                          isSelected
+                            ? 'bg-white/20 text-white'
+                            : isDark ? 'bg-zinc-950 text-zinc-500 border border-zinc-800' : 'bg-slate-100 text-slate-500'
+                        }`}>{count}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Brand Filter Level */}
+              <div className="space-y-2 pt-3 border-t border-zinc-200/20 dark:border-zinc-800/40">
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-3.5 bg-amber-500 rounded-full"></span>
+                  <span className={`text-[11px] font-black uppercase tracking-wider ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
+                    Filter By Brand
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+                  {(['Walkaroo', 'Walkmate', 'Paragon', 'Indus', 'Bairathi', 'Yono'] as const).map((brand) => {
+                    const count = products.filter(p => getProductBrand(p) === brand).length;
+                    const isSelected = selectedStockBrand === brand;
+                    return (
+                      <button
+                        key={brand}
+                        type="button"
+                        onClick={() => setSelectedStockBrand(brand)}
+                        className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border flex flex-col items-center justify-center gap-1 text-center ${
+                          isSelected
+                            ? 'bg-amber-500/10 border-amber-500/80 text-amber-500 shadow-sm'
+                            : isDark
+                              ? 'bg-zinc-900/40 border-zinc-850 text-zinc-400 hover:text-white hover:bg-zinc-900/80'
+                              : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-950'
+                        }`}
+                      >
+                        <span className="text-[10px] font-black tracking-wider uppercase">{brand}</span>
+                        <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md ${
+                          isSelected 
+                            ? 'bg-amber-500/20 text-amber-500'
+                            : isDark ? 'bg-zinc-950 text-zinc-500' : 'bg-slate-50 text-slate-400'
+                        }`}>{count} styles</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
             {/* Inventory table */}
-            <div className="overflow-x-auto rounded-2xl border border-zinc-900/10">
+            <div className="overflow-x-auto rounded-2xl border border-zinc-900/10 dark:border-zinc-800/40">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className={`border-b text-[10px] font-mono uppercase tracking-widest ${
                     isDark ? 'border-zinc-900 text-zinc-500 bg-zinc-900/10' : 'border-slate-100 text-slate-400 bg-slate-50/50'
                   }`}>
                     <th className="p-4 font-black">Footwear Style / ID</th>
-                    <th className="p-4 font-black">Category</th>
+                    <th className="p-4 font-black">Category & Brand</th>
                     <th className="p-4 font-black text-center">Unit Price (₹)</th>
                     <th className="p-4 font-black text-center">In-Stock On Hand</th>
                     <th className="p-4 font-black">Quick Restock Actions</th>
@@ -1856,87 +2032,101 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme = 'light',
                 <tbody className={`divide-y text-xs ${
                   isDark ? 'divide-zinc-900/60' : 'divide-slate-100'
                 }`}>
-                  {products.map(p => {
-                    const isOutOfStock = p.stock === 0;
-                    const isLowStock = p.stock > 0 && p.stock <= 5;
-                    return (
-                      <tr key={p.id} className={`transition-colors ${
-                        isDark ? 'hover:bg-zinc-900/10' : 'hover:bg-slate-50/40'
-                      }`}>
-                        {/* Name and ID */}
-                        <td className="p-4">
-                          <div className={`font-bold ${isDark ? 'text-zinc-200' : 'text-slate-900'}`}>{p.name}</div>
-                          <div className="text-[10px] text-zinc-500 font-mono mt-0.5">{p.id}</div>
-                        </td>
+                  {filteredStockProducts.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="p-12 text-center font-mono text-zinc-500">
+                        No styles match the chosen category or brand filter criteria.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredStockProducts.map(p => {
+                      const isOutOfStock = p.stock === 0;
+                      const isLowStock = p.stock > 0 && p.stock <= 5;
+                      const currentBrand = getProductBrand(p);
+                      return (
+                        <tr key={p.id} className={`transition-colors ${
+                          isDark ? 'hover:bg-zinc-900/10' : 'hover:bg-slate-50/40'
+                        }`}>
+                          {/* Name and ID */}
+                          <td className="p-4">
+                            <div className={`font-bold ${isDark ? 'text-zinc-200' : 'text-slate-900'}`}>{p.name}</div>
+                            <div className="text-[10px] text-zinc-500 font-mono mt-0.5">{p.id}</div>
+                          </td>
 
-                        {/* Category and Sub-category */}
-                        <td className="p-4">
-                          <span className={`font-mono text-[9px] px-2.5 py-1 rounded-full border ${
-                            isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-400' : 'bg-slate-50 border-slate-200 text-slate-600'
-                          }`}>
-                            {p.category} • {p.subCategory}
-                          </span>
-                        </td>
-
-                        {/* Price Edit field */}
-                        <td className="p-4 font-mono text-center">
-                          <div className="inline-flex items-center gap-1.5 justify-center">
-                            <span className="text-zinc-400 text-xs font-bold">₹</span>
-                            <input
-                              type="number"
-                              value={p.price}
-                              onChange={(e) => handleUpdatePrice(p.id, Number(e.target.value))}
-                              className={`border rounded-lg px-2.5 py-1.5 w-24 text-gold font-bold text-center outline-none transition-all ${
-                                isDark 
-                                  ? 'bg-zinc-950 border-zinc-800 focus:border-gold' 
-                                  : 'bg-white border-slate-200 focus:border-slate-500 hover:border-slate-300'
-                              }`}
-                            />
-                          </div>
-                        </td>
-
-                        {/* Stock Count */}
-                        <td className="p-4 text-center">
-                          <div className="flex items-center justify-center gap-2.5 font-mono">
-                            <span className={`font-black text-sm ${
-                              isOutOfStock ? 'text-rose-600' : isLowStock ? 'text-amber-500' : (isDark ? 'text-zinc-200' : 'text-slate-900')
-                            }`}>
-                              {p.stock}
-                            </span>
-                            {isOutOfStock && (
-                              <span className="text-[9px] bg-rose-50 border border-rose-100 text-rose-600 px-2 py-0.5 rounded-full font-bold">
-                                SOLD OUT
+                          {/* Category and Brand */}
+                          <td className="p-4">
+                            <div className="flex flex-col items-start gap-1.5">
+                              <span className={`font-mono text-[9px] px-2.5 py-0.5 rounded-full border leading-none ${
+                                isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-400' : 'bg-slate-50 border-slate-200/80 text-slate-600'
+                              }`}>
+                                {p.category} • {p.subCategory}
                               </span>
-                            )}
-                            {isLowStock && (
-                              <span className="text-[9px] bg-amber-50 border border-amber-100 text-amber-600 px-2 py-0.5 rounded-full font-bold animate-pulse">
-                                LOW STOCK
+                              <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider bg-amber-500/10 dark:bg-[#C5A059]/10 text-amber-600 dark:text-[#C5A059] px-2 py-0.5 rounded-md border border-amber-500/20 dark:border-[#C5A059]/20">
+                                🏷️ {currentBrand}
                               </span>
-                            )}
-                          </div>
-                        </td>
+                            </div>
+                          </td>
 
-                        {/* Restock operations */}
-                        <td className="p-4">
-                          <div className="flex gap-2">
-                            {[5, 10, 20].map(amt => (
-                              <button
-                                key={amt}
-                                onClick={() => handleQuickRestock(p.id, amt)}
-                                className={`px-3 py-1.5 rounded-xl text-[10px] font-black font-mono transition-all duration-200 cursor-pointer border ${
-                                  isDark
-                                    ? 'bg-zinc-900 border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white'
-                                    : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700 hover:text-slate-950 hover:border-slate-300'
+                          {/* Price Edit field */}
+                          <td className="p-4 font-mono text-center">
+                            <div className="inline-flex items-center gap-1.5 justify-center">
+                              <span className="text-zinc-400 text-xs font-bold">₹</span>
+                              <input
+                                type="number"
+                                value={p.price}
+                                onChange={(e) => handleUpdatePrice(p.id, Number(e.target.value))}
+                                className={`border rounded-lg px-2.5 py-1.5 w-24 text-gold font-bold text-center outline-none transition-all ${
+                                  isDark 
+                                    ? 'bg-zinc-950 border-zinc-800 focus:border-gold' 
+                                    : 'bg-white border-slate-200 focus:border-slate-500 hover:border-slate-300'
                                 }`}
-                              >
-                                +{amt}
-                              </button>
-                            ))}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                              />
+                            </div>
+                          </td>
+
+                          {/* Stock Count */}
+                          <td className="p-4 text-center">
+                            <div className="flex items-center justify-center gap-2.5 font-mono">
+                              <span className={`font-black text-sm ${
+                                isOutOfStock ? 'text-rose-600' : isLowStock ? 'text-amber-500' : (isDark ? 'text-zinc-200' : 'text-slate-900')
+                              }`}>
+                                {p.stock}
+                              </span>
+                              {isOutOfStock && (
+                                <span className="text-[9px] bg-rose-50 border border-rose-100 text-rose-600 px-2 py-0.5 rounded-full font-bold">
+                                  SOLD OUT
+                                </span>
+                              )}
+                              {isLowStock && (
+                                <span className="text-[9px] bg-amber-50 border border-amber-100 text-amber-600 px-2 py-0.5 rounded-full font-bold animate-pulse">
+                                  LOW STOCK
+                                </span>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Restock operations */}
+                          <td className="p-4">
+                            <div className="flex gap-2">
+                              {[5, 10, 20].map(amt => (
+                                <button
+                                  key={amt}
+                                  onClick={() => handleQuickRestock(p.id, amt)}
+                                  className={`px-3 py-1.5 rounded-xl text-[10px] font-black font-mono transition-all duration-200 cursor-pointer border ${
+                                    isDark
+                                      ? 'bg-zinc-900 border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white'
+                                      : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700 hover:text-slate-950 hover:border-slate-300'
+                                  }`}
+                                >
+                                  +{amt}
+                                </button>
+                              ))}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
