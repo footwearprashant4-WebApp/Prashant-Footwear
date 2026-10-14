@@ -301,7 +301,7 @@ export const AdminMobileHomeView: React.FC<AdminMobileHomeViewProps> = ({
         <button
           type="button"
           id="btn-admin-reports-analytics"
-          onClick={() => onNavigate('reports')}
+          onClick={() => onNavigate('reports_analytical')}
           className={`w-full rounded-[28px] sm:rounded-[32px] p-4 sm:p-4.5 border-[1.5px] shadow-[0_4px_16px_rgba(0,0,0,0.03)] flex items-center gap-4 text-left active:scale-[0.985] transition-all cursor-pointer ${
             isDark 
               ? 'bg-zinc-900 border-zinc-700 hover:border-zinc-500' 

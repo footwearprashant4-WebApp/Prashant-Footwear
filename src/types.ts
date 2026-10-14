@@ -85,13 +85,13 @@ export interface HeroImage {
 }
 
 export interface StockLedgerItem {
-  productId: string;
+  productId?: string;
   name: string;
   brand?: string;
   category?: Category | string;
   subCategory?: SubCategory | string;
   size: number | string;
-  colorId: number;
+  colorId?: number;
   colorName?: string;
   quantity: number;
   imageUrl?: string;
@@ -107,10 +107,12 @@ export interface StockLedger {
   createdAt: string;
   items: StockLedgerItem[];
   totalUnits: number;
-  status: 'completed' | 'draft';
+  status?: 'completed' | 'draft';
   notes?: string;
   reference?: string;
   supplier?: string;
+  vendor?: string;
+  invoiceNumber?: string;
   operatorMobile?: string;
   isReplacedPair?: boolean;
   originalOrderId?: string;

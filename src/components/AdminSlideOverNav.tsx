@@ -71,10 +71,18 @@ export const AdminSlideOverNav: React.FC<AdminSlideOverNavProps> = ({
     },
     { 
       id: 'reports', 
-      label: 'Sales Reports & Analytics', 
-      shortLabel: 'Reports', 
+      label: 'Sales Analytics Engine', 
+      shortLabel: 'Sales Engine', 
       icon: BarChart2, 
-      desc: 'Turnover, revenue & analytics', 
+      desc: 'Turnover, revenue & timeframe analytics', 
+      group: 'pos' 
+    },
+    { 
+      id: 'reports_analytical', 
+      label: 'Reports & Analytical', 
+      shortLabel: 'Analytics', 
+      icon: Tag, 
+      desc: 'Business reports & audit drawers', 
       group: 'pos' 
     },
     { 

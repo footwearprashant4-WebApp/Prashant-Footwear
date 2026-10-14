@@ -21,6 +21,7 @@ import { OffersManagementSection } from './OffersManagementSection';
 import { BrandManagementSection } from './BrandManagementSection';
 import { WholesaleDemandSection } from './WholesaleDemandSection';
 import { MonthlyReportSection } from './MonthlyReportSection';
+import { ReportsAnalyticalSection } from './ReportsAnalyticalSection';
 import { DataManagementSection } from './DataManagementSection';
 import { ErpMediaControlDesk } from './ErpMediaControlDesk';
 import { StockPurchaseOrderInvoicePage } from './StockPurchaseOrderInvoicePage';
@@ -133,7 +134,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     { id: 'stock', label: 'Stock Manager', shortLabel: 'Stock', icon: Package, desc: 'Inventory & Ledgers' },
     { id: 'catalogue', label: 'Catalogue', shortLabel: 'Catalogue', icon: Tag, desc: 'Articles & Models' },
     { id: 'wholesale_demand', label: 'Wholesale Demand', shortLabel: 'Mandi', icon: Truck, desc: 'Bulk Shop Orders' },
-    { id: 'reports', label: 'Sales Reports', shortLabel: 'Reports', icon: BarChart2, desc: 'Monthly Analytics' },
+    { id: 'reports', label: 'Sales Analytics Engine', shortLabel: 'Sales Engine', icon: BarChart2, desc: 'Revenue & Timeframe Analytics' },
+    { id: 'reports_analytical', label: 'Reports & Analytical', shortLabel: 'Analytics', icon: Tag, desc: 'Executive Drawers & Intelligence' },
     { id: 'offers', label: 'Offers & Deals', shortLabel: 'Offers', icon: Percent, desc: 'Promos & Clearances' },
     { id: 'brand_config', label: 'Brand Config', shortLabel: 'Brand', icon: Award, desc: 'Banners & Video Ads' },
     { id: 'accounts', label: 'Manage Accounts', shortLabel: 'Staff', icon: Users, desc: 'User Roles & PINs' },
@@ -148,7 +150,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   return (
     <div className={`min-h-screen font-sans transition-colors duration-300 ${
-      isDark ? 'bg-zinc-950 text-zinc-100' : isHomeTab ? 'bg-[#FAF7F0] text-[#141311]' : 'bg-[#FAF8F5] text-zinc-900'
+      isDark ? 'bg-zinc-950 text-zinc-100' : (isHomeTab || activeTab === 'reports' || activeTab === 'reports_analytical' || activeTab === 'analytics') ? 'bg-[#FAF7F0] text-[#141311]' : 'bg-[#FAF8F5] text-zinc-900'
     }`}>
       {/* Universal Sticky Top Bar Matching Reference Image */}
       <div className="sticky top-0 z-40 shadow-xs">
@@ -183,7 +185,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
 
       {/* Main Content Area */}
-      <main className={`max-w-7xl mx-auto ${isHomeTab ? 'px-2 sm:px-4 py-2 sm:py-3' : 'px-4 sm:px-6 lg:px-8 py-6 sm:py-8'}`}>
+      <main className={`max-w-7xl mx-auto ${(isHomeTab || activeTab === 'reports' || activeTab === 'reports_analytical' || activeTab === 'analytics') ? 'px-2.5 sm:px-4 py-2.5 sm:py-3.5' : 'px-4 sm:px-6 lg:px-8 py-6 sm:py-8'}`}>
         {/* 1. Exact Mobile Home UI matching uploaded screenshot */}
         {activeTab === 'home' && (
           <AdminMobileHomeView
@@ -335,14 +337,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           />
         )}
 
-        {/* 6. Sales Reports & Analytics */}
-        {(activeTab === 'reports' || activeTab === 'analytics') && (
+        {/* 6. Sales Analytics Engine (Sales Report) */}
+        {activeTab === 'reports' && (
           <MonthlyReportSection
             isDark={isDark}
             orders={orders}
             products={products}
             stockLedgers={stockLedgers}
             onBackToHome={() => setActiveTab('home')}
+            onNavigate={(tabId) => {
+              setIsCatalogueAdding(false);
+              setActiveTab(tabId);
+            }}
+          />
+        )}
+
+        {/* 6b. Reports & Analytical Section (Dedicated Business Drawers & Analytics) */}
+        {(activeTab === 'reports_analytical' || activeTab === 'analytics') && (
+          <ReportsAnalyticalSection
+            isDark={isDark}
+            orders={orders}
+            products={products}
+            stockLedgers={stockLedgers}
+            onBackToHome={() => setActiveTab('home')}
+            onNavigate={(tabId) => {
+              setIsCatalogueAdding(false);
+              setActiveTab(tabId);
+            }}
           />
         )}
 

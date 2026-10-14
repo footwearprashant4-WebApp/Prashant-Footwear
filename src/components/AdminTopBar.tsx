@@ -105,7 +105,8 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = ({
     { id: 'billing', label: 'Make Bill (POS)', icon: ShoppingBag },
     { id: 'stock', label: 'Products Stock', icon: Package },
     { id: 'wholesale_demand', label: 'Purchase Orders', icon: Truck },
-    { id: 'reports', label: 'Sales Reports', icon: BarChart2 },
+    { id: 'reports', label: 'Sales Engine', icon: BarChart2 },
+    { id: 'reports_analytical', label: 'Reports & Analytics', icon: Tag },
   ];
 
   return (

@@ -3,8 +3,8 @@ import path from 'path';
 
 async function startServer() {
   const app = express();
-  // Port 3000 is required by the infrastructure nginx reverse proxy
-  const PORT = 3000;
+  // Port 3000 is default, or respect process.env.PORT in cloud deployment
+  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
