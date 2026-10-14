@@ -21,6 +21,9 @@ service cloud.firestore {
 
     match /settings/{settingId} {
       allow read, write: if true;
+      match /{allPaths=**} {
+        allow read, write: if true;
+      }
     }
 
     match /hero_videos/{videoId} {
@@ -28,6 +31,18 @@ service cloud.firestore {
     }
 
     match /hero_images/{imageId} {
+      allow read, write: if true;
+    }
+
+    match /stock_ledgers/{ledgerId} {
+      allow read, write: if true;
+    }
+
+    match /brand_configs/{brandId} {
+      allow read, write: if true;
+    }
+
+    match /deleted_products/{docId} {
       allow read, write: if true;
     }
   }

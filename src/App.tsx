@@ -45,9 +45,17 @@ function PrashantFootwearApp() {
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
   const [infoModalType, setInfoModalType] = useState<'about' | 'contact' | null>(null);
   const [selectedDetailProduct, setSelectedDetailProduct] = useState<Product | null>(null);
+  const [detailInitialColorId, setDetailInitialColorId] = useState<number | string | null>(null);
 
   // Workspace Mode: Admin Dashboard vs E-Commerce Storefront
   const [isAdminMode, setIsAdminMode] = useState(false);
+  const [adminActiveTab, setAdminActiveTab] = useState<string>('home');
+
+  const handleNavigateAdminTab = (tab: string) => {
+    setAdminActiveTab(tab);
+    setIsAdminMode(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Shopping Cart state
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -64,6 +72,15 @@ function PrashantFootwearApp() {
       setViewingInvoiceId(invId);
     }
   }, []);
+
+  // Sync Tailwind dark mode class with React theme state
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -153,6 +170,11 @@ function PrashantFootwearApp() {
     } else {
       setCartItems([...cartItems, { product, selectedSize: size, quantity: 1 }]);
     }
+
+    // Close product details modal if open and open Cart drawer directly
+    setSelectedDetailProduct(null);
+    setDetailInitialColorId(null);
+    setIsCartDrawerOpen(true);
   };
 
   const handleUpdateCartQty = (productId: string, size: number, newQty: number) => {
@@ -229,11 +251,12 @@ function PrashantFootwearApp() {
           onOpenOffers={handleOpenOffers}
           isAdminMode={isAdminMode}
           onToggleAdminMode={() => setIsAdminMode(!isAdminMode)}
+          onNavigateAdminTab={handleNavigateAdminTab}
           cartCount={cartCount}
           onOpenCart={() => setIsCartDrawerOpen(true)}
           theme={theme}
           onToggleTheme={handleToggleTheme}
-          showThemeToggle={!!selectedCategory || isOfferFlowActive}
+          showThemeToggle={true}
         />
       )}
 
@@ -251,6 +274,7 @@ function PrashantFootwearApp() {
               theme={theme} 
               onToggleTheme={handleToggleTheme} 
               onToggleAdminMode={() => setIsAdminMode(!isAdminMode)} 
+              initialTab={adminActiveTab}
             />
           </motion.div>
         ) : (
@@ -275,7 +299,10 @@ function PrashantFootwearApp() {
               selectedCategory={selectedCategory}
               selectedSize={selectedSize}
               onClearFilters={handleClearFilters}
-              onSelectProduct={(p) => setSelectedDetailProduct(p)}
+              onSelectProduct={(p, initialColorId) => {
+                setSelectedDetailProduct(p);
+                setDetailInitialColorId(initialColorId ?? null);
+              }}
               onAddToCart={handleAddToCart}
               onSelectCategory={setSelectedCategory}
               onSelectSize={setSelectedSize}
@@ -335,7 +362,13 @@ function PrashantFootwearApp() {
       {selectedDetailProduct && (
         <ProductDetailModal
           product={selectedDetailProduct}
-          onClose={() => setSelectedDetailProduct(null)}
+          selectedSize={selectedSize}
+          initialColorId={detailInitialColorId}
+          theme={theme}
+          onClose={() => {
+            setSelectedDetailProduct(null);
+            setDetailInitialColorId(null);
+          }}
           onAddToCart={handleAddToCart}
         />
       )}
@@ -348,6 +381,7 @@ function PrashantFootwearApp() {
         onUpdateQty={handleUpdateCartQty}
         onRemoveItem={handleRemoveCartItem}
         onClearCart={handleClearCart}
+        theme={theme}
         onOpenAuth={() => {
           setIsCartDrawerOpen(false);
           setIsAuthModalOpen(true);

@@ -47,25 +47,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           createdAt: new Date().toISOString()
         };
 
-        // Seed default admin in Firestore if it doesn't exist
-        const adminDoc = doc(db, 'users', mobile);
-        const adminSnap = await getDoc(adminDoc);
-        if (!adminSnap.exists()) {
-          await setDoc(adminDoc, {
-            uid: mobile,
-            mobile: mobile,
-            role: 'admin',
-            createdAt: new Date().toISOString(),
-            password: password
-          });
-          // Also set in admins list
-          await setDoc(doc(db, 'admins', mobile), {
-            uid: mobile,
-            mobile: mobile,
-            email: 'footwearprashant4@gmail.com'
-          });
-        }
-
         setCurrentUser(adminSession);
         localStorage.setItem('prashant_user', JSON.stringify(adminSession));
         return { success: true };

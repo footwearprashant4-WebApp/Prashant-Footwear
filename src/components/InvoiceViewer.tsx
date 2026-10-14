@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { Printer, ArrowLeft, CheckCircle2, MessageSquare, Copy, Check, ShoppingBag, ShieldCheck } from 'lucide-react';
+import { Printer, ArrowLeft, CheckCircle2, MessageSquare, Copy, Check, ShoppingBag, ShieldCheck, Package } from 'lucide-react';
 
 interface InvoiceViewerProps {
   invoiceId: string;
@@ -21,11 +21,19 @@ export const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceId, onClose
         const docRef = doc(db, 'orders', invoiceId);
         const docSnap = await getDoc(docRef);
         
-        if (docSnap.exists()) {
+    if (docSnap.exists()) {
           setOrder({
             id: docSnap.id,
             ...docSnap.data()
           });
+
+          // Auto-trigger print if requested via link parameter
+          const params = new URLSearchParams(window.location.search);
+          if (params.get('print') === 'true') {
+            setTimeout(() => {
+              window.print();
+            }, 600);
+          }
         } else {
           setError('Invoice not found in our database system. Please verify the link or contact support.');
         }
@@ -219,9 +227,21 @@ export const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceId, onClose
                     <tr key={index} className="text-slate-800">
                       <td className="py-4 px-1 font-mono text-slate-400">{index + 1}</td>
                       <td className="py-4 px-2 font-black text-slate-950 uppercase">
-                        <div>
-                          <p>{it.name}</p>
-                          <p className="text-[9px] text-slate-400 font-mono mt-0.5 font-normal">SKU: {it.productId}</p>
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
+                            {it.imageUrl ? (
+                              <img src={it.imageUrl} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                            ) : (
+                              <Package size={16} className="text-slate-400" />
+                            )}
+                          </div>
+                          <div>
+                            <p>{it.name}</p>
+                            <p className="text-[9px] text-slate-400 font-mono mt-0.5 font-normal">
+                              {it.articleCode ? `Art: ${it.articleCode}` : `SKU: ${it.productId}`}
+                              {it.color ? ` • ${it.color}` : ''}
+                            </p>
+                          </div>
                         </div>
                       </td>
                       <td className="py-4 px-2 text-center">

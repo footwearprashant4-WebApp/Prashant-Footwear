@@ -66,7 +66,7 @@ export const SizeSelectionOverlay: React.FC<SizeSelectionOverlayProps> = ({
               SELECT {category}'S SIZE
             </h2>
             <p className="text-xs text-zinc-500 max-w-[280px] mt-1.5 uppercase tracking-wide">
-              Region: Standard UK/IN
+              Select Your Size
             </p>
           </div>
 
@@ -80,7 +80,7 @@ export const SizeSelectionOverlay: React.FC<SizeSelectionOverlayProps> = ({
               >
                 {size}
                 <span className="absolute bottom-1 text-[8px] opacity-0 group-hover:opacity-100 font-bold uppercase transition-opacity">
-                  UK/IN
+                  SIZE {size}
                 </span>
               </button>
             ))}

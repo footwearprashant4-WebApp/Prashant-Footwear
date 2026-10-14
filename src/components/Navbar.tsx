@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useProducts } from '../context/ProductContext';
 import { useLanguage } from '../context/LanguageContext';
 import { LanguageToggle } from './LanguageToggle';
-import { User, LogIn, LogOut, Shield, ChevronDown, Menu, X, ShoppingCart, Sun, Moon, ChevronRight, Sparkles } from 'lucide-react';
+import { User, LogIn, LogOut, Shield, ChevronDown, Menu, X, ShoppingCart, Sun, Moon, ChevronRight, Sparkles, Award, Users, Tag, Truck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface NavbarProps {
@@ -14,6 +15,7 @@ interface NavbarProps {
   onOpenOffers: () => void;
   isAdminMode: boolean;
   onToggleAdminMode: () => void;
+  onNavigateAdminTab?: (tab: string) => void;
   cartCount: number;
   onOpenCart: () => void;
   theme: 'dark' | 'light';
@@ -30,153 +32,233 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenOffers,
   isAdminMode,
   onToggleAdminMode,
+  onNavigateAdminTab,
   cartCount,
   onOpenCart,
   theme,
   onToggleTheme,
-  showThemeToggle = false
+  showThemeToggle = true
 }) => {
   const { currentUser, logout, isAdmin } = useAuth();
+  const { isOfflineCacheMode } = useProducts();
   const { t } = useLanguage();
+  const [isAtTop, setIsAtTop] = useState(true);
+  const [isScrollingUp, setIsScrollingUp] = useState(false);
   const [hasScrolledOnce, setHasScrolledOnce] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Monitor scroll to toggle background transparency dynamically
+  // Automatically close the profile dropdown popup after 5 seconds
   useEffect(() => {
+    if (!isDropdownOpen) return;
+    const timer = setTimeout(() => {
+      setIsDropdownOpen(false);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [isDropdownOpen]);
+
+  // Monitor scroll position and direction to control top banner transparency and height dynamically
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+
     const handleScroll = () => {
-      setHasScrolledOnce(window.scrollY > 20);
+      const currentScrollY = window.scrollY;
+      setIsAtTop(currentScrollY <= 15);
+      setHasScrolledOnce(currentScrollY > 15);
+
+      if (currentScrollY < lastScrollY && currentScrollY > 20) {
+        setIsScrollingUp(true);
+      } else {
+        setIsScrollingUp(false);
+      }
+      lastScrollY = currentScrollY;
     };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
-    setHasScrolledOnce(window.scrollY > 20);
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const isNavbarDark = theme === 'dark' || !hasScrolledOnce || !showThemeToggle;
+  const isNavbarDark = theme === 'dark';
 
   return (
     <header
       id="main-navbar"
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        !hasScrolledOnce
-          ? 'bg-black border-b border-white/10 py-4 shadow-2xl'
-          : !showThemeToggle
-            ? 'bg-transparent border-b border-transparent py-4 shadow-none'
-            : theme === 'dark'
-              ? 'bg-black/45 backdrop-blur-md border-b border-white/5 py-4'
-              : 'bg-white/85 backdrop-blur-md border-b border-zinc-200/80 py-4 shadow-sm'
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isAtTop
+          ? isNavbarDark
+            ? 'bg-black/95 backdrop-blur-md border-b border-zinc-800/80 py-2.5 sm:py-3 shadow-md'
+            : 'bg-white/95 backdrop-blur-md border-b border-zinc-200/90 py-2.5 sm:py-3 shadow-xs'
+          : isNavbarDark
+            ? 'bg-transparent backdrop-blur-xs border-b border-transparent py-2 sm:py-2.5 shadow-none'
+            : 'bg-transparent backdrop-blur-xs border-b border-transparent py-2 sm:py-2.5 shadow-none'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 flex items-center justify-between gap-3 sm:gap-6 md:gap-8">
-        {/* Left: Brand Logo */}
-        <div 
-          id="navbar-logo"
-          onClick={onScrollToTop}
-          className="cursor-pointer flex flex-col items-start leading-none group shrink-0"
-        >
-          <span className={`serif-display text-2xl md:text-3xl font-extrabold tracking-tighter uppercase transition-colors duration-300 group-hover:text-gold ${
-            isNavbarDark 
-              ? 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]' 
-              : 'text-zinc-900'
-          }`}>
-            Prashant
-          </span>
-          <span className="font-mono text-[8px] sm:text-[9px] uppercase tracking-[0.3em] text-[#C5A059] font-bold mt-0.5 ml-0.5">
-            Footwear
-          </span>
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 md:px-8 flex items-center justify-between gap-2 sm:gap-4 md:gap-6">
+        {/* Left: Brand Logo (Name as it is) */}
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+          <div 
+            id="navbar-logo"
+            onClick={onScrollToTop}
+            className="cursor-pointer flex flex-col items-start leading-none group shrink-0"
+            title="Prashant Footwear • Home"
+          >
+            <span className={`serif-display text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tighter uppercase transition-colors duration-300 group-hover:text-gold ${
+              isNavbarDark 
+                ? 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]' 
+                : 'text-zinc-900'
+            }`}>
+              Prashant
+            </span>
+            <span className="font-mono text-[8px] sm:text-[9px] uppercase tracking-[0.3em] text-[#C5A059] font-bold mt-0.5 ml-0.5">
+              Footwear
+            </span>
+          </div>
+          {isOfflineCacheMode ? (
+            <div className="hidden lg:flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20" title="Firestore is currently in Cache Mode">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500"></span>
+              </span>
+              <span className="text-[9px] font-mono font-bold tracking-wider text-amber-500 uppercase whitespace-nowrap">
+                Cache
+              </span>
+            </div>
+          ) : (
+            <div className="hidden lg:flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20" title="Firestore database is Live and connected">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+              </span>
+              <span className="text-[9px] font-mono font-bold tracking-wider text-emerald-500 uppercase whitespace-nowrap">
+                Live
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Center: Desktop Navigation Capsule */}
+        {/* Center: Navigation Bar Capsule */}
         <nav 
           id="navbar-menu-desktop" 
-          className={`hidden md:flex items-center gap-2 p-1.5 rounded-full font-sans border transition-all duration-500 shrink-0 ${
+          className={`hidden md:flex items-center gap-1 lg:gap-1.5 p-1 rounded-full font-sans border transition-all duration-300 shrink-0 ${
             isNavbarDark
-              ? 'bg-black/50 border-white/15 shadow-[inset_0_1px_2px_rgba(255,255,255,0.05)]'
+              ? 'bg-zinc-950/70 border-white/15 shadow-[inset_0_1px_2px_rgba(255,255,255,0.05)]'
               : 'bg-zinc-100 border-zinc-200/80 shadow-inner'
           }`}
         >
           <button
             onClick={onScrollToTop}
-            className={`px-5 py-2 text-xs font-extrabold tracking-wider uppercase rounded-full transition-all duration-300 cursor-pointer ${
+            className={`px-3 lg:px-4 py-1.5 text-xs font-bold tracking-wider uppercase rounded-full transition-all duration-200 cursor-pointer ${
               isNavbarDark
-                ? 'text-zinc-300 hover:text-white hover:bg-white/5'
-                : 'text-zinc-600 hover:text-zinc-900 hover:bg-black/5'
+                ? 'text-zinc-300 hover:text-white hover:bg-white/10'
+                : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-200/60'
             }`}
           >
             {t('nav.home')}
           </button>
           <button
             onClick={onOpenAbout}
-            className={`px-5 py-2 text-xs font-extrabold tracking-wider uppercase rounded-full transition-all duration-300 cursor-pointer ${
+            className={`px-3 lg:px-4 py-1.5 text-xs font-bold tracking-wider uppercase rounded-full transition-all duration-200 cursor-pointer ${
               isNavbarDark
-                ? 'text-zinc-300 hover:text-white hover:bg-white/5'
-                : 'text-zinc-600 hover:text-zinc-900 hover:bg-black/5'
+                ? 'text-zinc-300 hover:text-white hover:bg-white/10'
+                : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-200/60'
             }`}
           >
             {t('nav.about')}
           </button>
           <button
             onClick={onScrollToProducts}
-            className={`px-5 py-2 text-xs font-extrabold tracking-wider uppercase rounded-full transition-all duration-300 cursor-pointer ${
+            className={`px-3 lg:px-4 py-1.5 text-xs font-bold tracking-wider uppercase rounded-full transition-all duration-200 cursor-pointer ${
               isNavbarDark
-                ? 'text-zinc-300 hover:text-white hover:bg-white/5'
-                : 'text-zinc-600 hover:text-zinc-900 hover:bg-black/5'
+                ? 'text-zinc-300 hover:text-white hover:bg-white/10'
+                : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-200/60'
             }`}
           >
             {t('nav.collection')}
           </button>
           <button
             onClick={onOpenOffers}
-            className={`px-5 py-2 text-xs font-extrabold tracking-wider uppercase rounded-full transition-all duration-300 cursor-pointer ${
+            className={`px-3 lg:px-4 py-1.5 text-xs font-bold tracking-wider uppercase rounded-full transition-all duration-200 cursor-pointer ${
               isNavbarDark
-                ? 'text-zinc-300 hover:text-white hover:bg-white/5'
-                : 'text-zinc-600 hover:text-zinc-900 hover:bg-black/5'
+                ? 'text-zinc-300 hover:text-white hover:bg-white/10'
+                : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-200/60'
             }`}
           >
             {t('nav.offers')}
           </button>
           <button
             onClick={onOpenContact}
-            className={`px-5 py-2 text-xs font-extrabold tracking-wider uppercase rounded-full transition-all duration-300 cursor-pointer ${
+            className={`px-3 lg:px-4 py-1.5 text-xs font-bold tracking-wider uppercase rounded-full transition-all duration-200 cursor-pointer ${
               isNavbarDark
-                ? 'text-zinc-300 hover:text-white hover:bg-white/5'
-                : 'text-zinc-600 hover:text-zinc-900 hover:bg-black/5'
+                ? 'text-zinc-300 hover:text-white hover:bg-white/10'
+                : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-200/60'
             }`}
           >
             {t('nav.contact')}
           </button>
           {isAdmin && (
-            <button
-              onClick={onToggleAdminMode}
-              className={`px-5 py-2 text-xs font-black tracking-wider uppercase rounded-full transition-all duration-300 cursor-pointer flex items-center gap-1.5 shadow-[0_2px_10px_-3px_rgba(245,158,11,0.3)] border ${
-                isNavbarDark
-                  ? 'text-amber-400 border-amber-500/30 bg-amber-500/10 hover:text-amber-300 hover:bg-amber-500/20'
-                  : 'text-amber-700 border-amber-500/20 bg-amber-500/5 hover:text-amber-900 hover:bg-amber-500/15'
-              }`}
-            >
-              <Shield size={12} className="animate-pulse text-amber-500" />
-              {isAdminMode ? t('nav.customerMode') : t('nav.adminMode')}
-            </button>
+            <>
+              <button
+                onClick={() => onNavigateAdminTab?.('brand_config')}
+                className={`px-2.5 lg:px-3 py-1.5 text-xs font-bold tracking-wider uppercase rounded-full transition-all duration-200 cursor-pointer flex items-center gap-1 ${
+                  isNavbarDark
+                    ? 'text-amber-400 hover:text-white hover:bg-white/10'
+                    : 'text-amber-700 hover:text-amber-950 hover:bg-zinc-200/60'
+                }`}
+                title="Brand Management & Configuration"
+              >
+                <Award size={13} className="text-amber-500" />
+                <span className="hidden xl:inline">Brand</span> Config
+              </button>
+              <button
+                onClick={() => onNavigateAdminTab?.('accounts')}
+                className={`px-2.5 lg:px-3 py-1.5 text-xs font-bold tracking-wider uppercase rounded-full transition-all duration-200 cursor-pointer flex items-center gap-1 ${
+                  isNavbarDark
+                    ? 'text-amber-400 hover:text-white hover:bg-white/10'
+                    : 'text-amber-700 hover:text-amber-950 hover:bg-zinc-200/60'
+                }`}
+                title="Manage Users & Accounts"
+              >
+                <Users size={13} className="text-amber-500" />
+                Accounts
+              </button>
+              <button
+                onClick={onToggleAdminMode}
+                className={`px-3 lg:px-3.5 py-1.5 text-xs font-black tracking-wider uppercase rounded-full transition-all duration-200 cursor-pointer flex items-center gap-1.5 shadow-[0_2px_10px_-3px_rgba(245,158,11,0.3)] border ${
+                  isNavbarDark
+                    ? 'text-amber-400 border-amber-500/30 bg-amber-500/10 hover:text-amber-300 hover:bg-amber-500/20'
+                    : 'text-amber-700 border-amber-500/20 bg-amber-500/10 hover:text-amber-900 hover:bg-amber-500/20'
+                }`}
+              >
+                <Shield size={12} className="animate-pulse text-amber-500" />
+                {isAdminMode ? t('nav.customerMode') : t('nav.adminMode')}
+              </button>
+            </>
           )}
         </nav>
 
-        {/* Right: Actions */}
-        <div id="navbar-actions" className="flex items-center gap-2 sm:gap-3.5 md:gap-4 lg:gap-5">
-          {/* Language Toggle */}
+        {/* Right: Actions (Language Switcher, Theme Switcher, Cart, Profile Logo) */}
+        <div id="navbar-actions" className="flex items-center gap-1.5 sm:gap-2.5 md:gap-3 shrink-0">
+          {/* Switch Language Button */}
           <LanguageToggle isNavbarDark={isNavbarDark} />
 
-          {/* Theme Toggle Button */}
-          {showThemeToggle && (
+          {/* Switch Mode Light / Dark Button (Hidden when shopping cart appears) */}
+          {showThemeToggle && cartCount === 0 && (
             <button
               onClick={onToggleTheme}
-              className={`flex h-[42px] w-[42px] items-center justify-center rounded-full border transition-all duration-300 cursor-pointer relative ${
+              className={`flex h-[42px] w-[42px] items-center justify-center rounded-full border transition-all duration-300 cursor-pointer relative shrink-0 ${
                 isNavbarDark
-                  ? 'border-white/15 bg-black/50 text-yellow-400 hover:text-yellow-300 hover:border-white/30 hover:bg-white/5 shadow-[inset_0_1px_2px_rgba(255,255,255,0.05)] hover:scale-105'
-                  : 'border-zinc-200/80 bg-zinc-100 text-zinc-600 hover:text-zinc-950 hover:border-zinc-300 hover:bg-zinc-200/50 shadow-inner hover:scale-105'
+                  ? 'border-white/15 bg-black/50 text-amber-400 hover:text-amber-300 hover:border-white/30 hover:bg-white/10 shadow-[inset_0_1px_2px_rgba(255,255,255,0.05)] hover:scale-105'
+                  : 'border-zinc-200/80 bg-zinc-100 text-zinc-700 hover:text-zinc-950 hover:border-zinc-300 hover:bg-zinc-200/70 shadow-inner hover:scale-105'
               }`}
               title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              aria-label={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
-              {theme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}
+              {theme === 'dark' ? (
+                <Sun size={18} className="transition-transform duration-300 hover:rotate-45" />
+              ) : (
+                <Moon size={18} className="transition-transform duration-300 hover:-rotate-12" />
+              )}
             </button>
           )}
 
@@ -184,14 +266,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           {!isAdminMode && cartCount > 0 && (
             <button
               onClick={onOpenCart}
-              className={`flex h-[42px] w-[42px] items-center justify-center rounded-full border transition-all duration-300 cursor-pointer relative ${
+              className={`flex h-[42px] w-[42px] items-center justify-center rounded-full border transition-all duration-300 cursor-pointer relative shrink-0 ${
                 isNavbarDark
-                  ? 'border-white/15 bg-black/50 text-zinc-100 hover:text-gold hover:border-white/30 hover:bg-white/5 shadow-[inset_0_1px_2px_rgba(255,255,255,0.05)] hover:scale-105'
-                  : 'border-zinc-200/80 bg-zinc-100 text-zinc-800 hover:text-gold hover:border-zinc-300 hover:bg-zinc-200/50 shadow-inner hover:scale-105'
+                  ? 'border-white/15 bg-black/50 text-zinc-100 hover:text-gold hover:border-white/30 hover:bg-white/10 shadow-[inset_0_1px_2px_rgba(255,255,255,0.05)] hover:scale-105'
+                  : 'border-zinc-200/80 bg-zinc-100 text-zinc-800 hover:text-gold hover:border-zinc-300 hover:bg-zinc-200/70 shadow-inner hover:scale-105'
               }`}
               title="View Cart"
             >
-              <ShoppingCart size={19} />
+              <ShoppingCart size={18} />
               {cartCount > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#C5A059] text-[10px] font-black text-black ring-2 ring-black animate-pulse">
                   {cartCount}
@@ -200,25 +282,26 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
-          {/* User Auth Profile Logo Dropdown */}
-          <div className="relative" id="profile-logo-section">
+          {/* Profile Logo & Menu Dropdown */}
+          <div className="relative shrink-0" id="profile-logo-section">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className={`flex h-[42px] w-[42px] items-center justify-center rounded-full border transition-all duration-300 cursor-pointer relative ${
+              className={`flex h-[42px] w-[42px] items-center justify-center rounded-full border transition-all duration-300 cursor-pointer relative shrink-0 ${
                 isNavbarDark
-                  ? 'border-white/15 bg-black/50 text-white hover:border-white/30 hover:bg-white/5 shadow-[inset_0_1px_2px_rgba(255,255,255,0.05)] hover:scale-105'
-                  : 'border-zinc-200/80 bg-zinc-100 text-zinc-800 hover:border-zinc-300 hover:bg-zinc-200/50 shadow-inner hover:scale-105'
+                  ? 'border-white/15 bg-black/50 text-white hover:border-white/30 hover:bg-white/10 shadow-[inset_0_1px_2px_rgba(255,255,255,0.05)] hover:scale-105'
+                  : 'border-zinc-200/80 bg-zinc-100 text-zinc-800 hover:border-zinc-300 hover:bg-zinc-200/70 shadow-inner hover:scale-105'
               }`}
               title="Profile Menu"
+              aria-label="Profile Menu"
             >
               {currentUser ? (
                 <span className={`text-[12px] font-black tracking-normal leading-none flex items-center justify-center ${
-                  currentUser.role === 'admin' ? 'text-amber-500' : 'text-indigo-500'
+                  currentUser.role === 'admin' ? 'text-amber-500 font-extrabold' : 'text-indigo-500 font-extrabold'
                 }`}>
                   {currentUser.role === 'admin' ? 'PF' : 'U'}
                 </span>
               ) : (
-                <User size={19} className={isNavbarDark ? 'text-white' : 'text-zinc-800'} />
+                <User size={18} className={isNavbarDark ? 'text-white' : 'text-zinc-800'} />
               )}
               {currentUser && (
                 <span className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-zinc-950 animate-pulse" />
@@ -294,39 +377,41 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <div className="p-1.5 sm:p-2 space-y-1">
                           {/* Switch to Admin / Switch to Shop */}
                           {isAdmin ? (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                onToggleAdminMode();
-                                setIsDropdownOpen(false);
-                              }}
-                              className={`w-full group flex items-center justify-between p-2 sm:p-3 rounded-xl sm:rounded-2xl transition-all duration-200 text-left font-mono border ${
-                                theme === 'dark'
-                                  ? 'hover:bg-zinc-900/60 border-transparent hover:border-zinc-800/80 text-zinc-300 hover:text-white'
-                                  : 'hover:bg-slate-50 border-transparent hover:border-slate-100 text-zinc-600 hover:text-zinc-900 shadow-sm hover:shadow-md'
-                              }`}
-                            >
-                              <div className="flex items-center gap-2 sm:gap-2.5">
-                                <div className={`p-1 sm:p-1.5 rounded-lg sm:rounded-xl transition-colors ${
-                                  theme === 'dark' ? 'bg-zinc-900 group-hover:bg-zinc-850' : 'bg-slate-100'
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  onToggleAdminMode();
+                                  setIsDropdownOpen(false);
+                                }}
+                                className={`w-full group flex items-center justify-between p-2 sm:p-3 rounded-xl sm:rounded-2xl transition-all duration-200 text-left font-mono border ${
+                                  theme === 'dark'
+                                    ? 'hover:bg-zinc-900/60 border-transparent hover:border-zinc-800/80 text-zinc-300 hover:text-white'
+                                    : 'hover:bg-slate-50 border-transparent hover:border-slate-100 text-zinc-600 hover:text-zinc-900 shadow-sm hover:shadow-md'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 sm:gap-2.5">
+                                  <div className={`p-1 sm:p-1.5 rounded-lg sm:rounded-xl transition-colors ${
+                                    theme === 'dark' ? 'bg-zinc-900 group-hover:bg-zinc-850' : 'bg-slate-100'
+                                  }`}>
+                                    <Shield size={12} className={isAdminMode ? "text-amber-500" : "text-zinc-400"} />
+                                  </div>
+                                  <div className="flex flex-col font-sans">
+                                    <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider">
+                                      {isAdminMode ? t('nav.customerMode') : t('nav.adminMode')}
+                                    </span>
+                                    <span className="text-[8px] sm:text-[9px] text-zinc-400 mt-0.5">{t('nav.adminPanel')}</span>
+                                  </div>
+                                </div>
+                                <div className={`w-7 h-4 sm:w-8 sm:h-4.5 rounded-full relative shrink-0 transition-colors ${
+                                  isAdminMode ? 'bg-amber-500' : 'bg-zinc-700'
                                 }`}>
-                                  <Shield size={12} className={isAdminMode ? "text-amber-500" : "text-zinc-400"} />
+                                  <div className={`absolute top-0.5 w-3 sm:w-3.5 h-3 sm:h-3.5 bg-white rounded-full transition-all duration-250 shadow-sm ${
+                                    isAdminMode ? 'right-0.5' : 'left-0.5'
+                                  }`} />
                                 </div>
-                                <div className="flex flex-col font-sans">
-                                  <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider">
-                                    {isAdminMode ? t('nav.customerMode') : t('nav.adminMode')}
-                                  </span>
-                                  <span className="text-[8px] sm:text-[9px] text-zinc-400 mt-0.5">{t('nav.adminPanel')}</span>
-                                </div>
-                              </div>
-                              <div className={`w-7 h-4 sm:w-8 sm:h-4.5 rounded-full relative shrink-0 transition-colors ${
-                                isAdminMode ? 'bg-amber-500' : 'bg-zinc-700'
-                              }`}>
-                                <div className={`absolute top-0.5 w-3 sm:w-3.5 h-3 sm:h-3.5 bg-white rounded-full transition-all duration-250 shadow-sm ${
-                                  isAdminMode ? 'right-0.5' : 'left-0.5'
-                                }`} />
-                              </div>
-                            </button>
+                              </button>
+                            </>
                           ) : (
                             /* Non-admin logged-in users can switch to Admin by logging into the admin account */
                             <button
@@ -562,11 +647,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onToggleAdminMode();
                   setIsMobileMenuOpen(false);
                 }}
-                className={`text-left text-sm font-bold tracking-wider uppercase transition-colors flex items-center gap-2 border-t pt-3 border-zinc-800/20 ${
+                className={`text-left text-xs font-black tracking-wider uppercase transition-colors flex items-center gap-2 border-t pt-3 border-zinc-800/20 ${
                   theme === 'dark' ? 'text-amber-400 hover:text-amber-300' : 'text-amber-700 hover:text-amber-900'
                 }`}
               >
-                <Shield size={14} className="text-amber-500" />
+                <Shield size={14} className="text-amber-500 animate-pulse" />
                 {isAdminMode ? t('nav.customerMode') : t('nav.adminMode')}
               </button>
             )}

@@ -14,6 +14,7 @@
         "description": { "type": "string" },
         "imageUrl": { "type": "string" },
         "stock": { "type": "number" },
+        "barcode": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["id", "name", "category", "subCategory", "sizes", "price", "stock", "createdAt"]
@@ -91,6 +92,41 @@
         "isBase64": { "type": "boolean" }
       },
       "required": ["id", "name", "url", "createdAt"]
+    },
+    "StockLedger": {
+      "title": "StockLedger",
+      "description": "Stock ledger invoices tracking inward goods additions and historical stock entry logs.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "items": { "type": "array" },
+        "totalUnits": { "type": "number" },
+        "status": { "type": "string", "enum": ["completed", "draft"] },
+        "notes": { "type": "string" },
+        "operatorMobile": { "type": "string" }
+      },
+      "required": ["id", "createdAt", "items", "totalUnits", "status"]
+    },
+    "BrandConfig": {
+      "title": "BrandConfig",
+      "description": "Footwear brand configuration including 100x100 logo, 350x150 banner, theme colors, and partner status.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "brandName": { "type": "string" },
+        "tagline": { "type": "string" },
+        "description": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "bannerUrl": { "type": "string" },
+        "accentColor": { "type": "string" },
+        "displayMediaType": { "type": "string", "enum": ["banner", "video", "none"] },
+        "videoUrl": { "type": "string" },
+        "isVerifiedPartner": { "type": "boolean" },
+        "trustBadges": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "brandName", "createdAt"]
     }
   },
   "firestore": {
@@ -121,6 +157,14 @@
     "hero_images/{imageId}": {
       "schema": "HeroImage",
       "description": "Cinematic banner background slideshow images (max 4)."
+    },
+    "stock_ledgers/{ledgerId}": {
+      "schema": "StockLedger",
+      "description": "Historical inward goods ledgers."
+    },
+    "brand_configs/{brandId}": {
+      "schema": "BrandConfig",
+      "description": "Brand identities, 100x100 logos, and 350x150 banners."
     }
   }
 }
